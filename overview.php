@@ -23,7 +23,7 @@ if(isset($_SESSION["user"])) {
     
     /* Overview - Unlock Order - Start */
     if($dn != NULL AND $do != NULL) {
-        $delivery = getDeliverys($dn);
+        $delivery = getDeliveries($dn);
         if($do == "unlock" AND $_SESSION["user"]["id"] == $delivery[0]['owner']) {
             unlockOrder($dn);
             $smarty->assign('countUnlockedOrders', count(getUnlockedOrders()));
@@ -64,7 +64,11 @@ if(isset($_SESSION["user"])) {
 
         $cost_array = array();
         $count_array = array();
-        $select_dn = "SELECT * FROM deliverys WHERE delivery_number = '$dn' ORDER BY CAST(delivery_text AS DECIMAL), sauce";
+        $select_dn = "SELECT d.*, c.slug AS category "
+            . "FROM deliveries d "
+            . "JOIN categories c ON c.id = d.category_id "
+            . "WHERE d.delivery_number = '$dn' "
+            . "ORDER BY CAST(d.delivery_text AS DECIMAL), d.sauce";
         $query = $mysqli->query($select_dn);
         $owner = $query->fetch_object()->owner;
         $query->data_seek(0);
@@ -85,7 +89,7 @@ if(isset($_SESSION["user"])) {
         $smarty->assign('total', $total);
         $smarty->assign('totalSum', $totalSum);
         $smarty->assign('totalItems', totalItems($dn));
-        $smarty->assign('deliverys', getDeliverys($dn));
+        $smarty->assign('deliveries', getDeliveries($dn));
         $smarty->assign('ownerID', $owner);
         $smarty->assign('ownerFullName', $ownerData['firstname'] . " " . $ownerData['lastname']);
         $smarty->assign('category', $category);

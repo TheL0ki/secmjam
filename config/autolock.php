@@ -6,7 +6,7 @@ $strQuery = "SET character_set_results = 'utf8',
 				character_set_database = 'utf8',
 				character_set_server = 'utf8'";
 require_once("db_cnx.php");
-$select_orders = "SELECT * FROM deliverys WHERE locked = '0' AND autolock IS NOT NULL";
+$select_orders = "SELECT * FROM deliveries WHERE locked = '0' AND autolock IS NOT NULL";
 $query_order = $mysqli->query($select_orders);
 while($row = $query_order->fetch_assoc()) {
     if($row["autolock"] < date("Y-m-d H:i:s", time())) {
@@ -14,7 +14,7 @@ while($row = $query_order->fetch_assoc()) {
         echo $row["autolock"];
         if($row["autolock"] != "0000-00-00 00:00:00") {
             $id = $row["id"];
-            $lock_order = "UPDATE deliverys SET locked = '1' WHERE id='$id'";
+            $lock_order = "UPDATE deliveries SET locked = '1' WHERE id='$id'";
             $query_lock = $mysqli->query($lock_order);
         }
     }

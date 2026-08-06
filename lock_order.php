@@ -13,7 +13,7 @@ if(isset($_SESSION["user"])) {
     // Page Content comes here
     $dn = $_GET["dn"];
     $owner = $_GET["owner"];
-    $update_lock = "UPDATE deliverys SET locked='1' WHERE delivery_number = '$dn'";
+    $update_lock = "UPDATE deliveries SET locked='1' WHERE delivery_number = '$dn'";
     $query = $mysqli->query($update_lock);
     echo 'Bestellung gesperrt';
     echo '<meta http-equiv="refresh" content="3; URL=overview.php?dn='. $dn .'&owner='.$owner.'" />' . "\n";

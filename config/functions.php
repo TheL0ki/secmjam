@@ -65,11 +65,37 @@ function changeBalance($userid, $amount, $do = 'add') {
     }
 }
 
+function getCategoryBySlug($slug) {
+    global $mysqli;
+    $select = 'SELECT * FROM categories WHERE slug = ?';
+    $stmt = $mysqli->prepare($select);
+    $stmt->bind_param('s', $slug);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    return $result->fetch_assoc();
+}
+
+function getCategoryIdBySlug($slug) {
+    $category = getCategoryBySlug($slug);
+    return $category ? (int) $category['id'] : null;
+}
+
+function getCategorySlugById($id) {
+    global $mysqli;
+    $select = 'SELECT slug FROM categories WHERE id = ?';
+    $stmt = $mysqli->prepare($select);
+    $stmt->bind_param('i', $id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    return $row ? $row['slug'] : null;
+}
+
 function getPrice($foodid, $amount = 1) {
     global $mysqli;
-    $select = 'SELECT * FROM menue WHERE id = '.$foodid;
+    $select = 'SELECT * FROM menu WHERE id = '.$foodid;
     $query = $mysqli->query($select);
-    $price = $query->fetch_object()->prize;
+    $price = $query->fetch_object()->price;
     return $price * $amount;
 }
 
@@ -131,13 +157,13 @@ function getVotePercent($vote) {
 
 function lockOrder($dn) {
     global $mysqli;
-    $update_lock = "UPDATE deliverys SET locked='1' WHERE delivery_number = '$dn'";
+    $update_lock = "UPDATE deliveries SET locked='1' WHERE delivery_number = '$dn'";
     $mysqli->query($update_lock);
 }
 
 function unlockOrder($dn) {
     global $mysqli;
-    $update_lock = "UPDATE deliverys SET locked='0' WHERE delivery_number = '$dn'";
+    $update_lock = "UPDATE deliveries SET locked='0' WHERE delivery_number = '$dn'";
     $mysqli->query($update_lock);
 }
 
@@ -148,7 +174,7 @@ function closeOrder($dn, $helperArray) {
         $helperString .= '"'.$helper.'"|';
     }
     $helperString = substr($helperString,0, -1);
-    $update = 'UPDATE deliverys SET status = 1, locked = 1, helper = ? WHERE delivery_number = ?';
+    $update = 'UPDATE deliveries SET status = 1, locked = 1, helper = ? WHERE delivery_number = ?';
     $stmt = $mysqli->prepare($update);
     $stmt->bind_param('ss', $helperString, $dn);
     $stmt->execute();
@@ -167,7 +193,11 @@ function getPoints($id) {
 
 function lastOrders($id) {
     global $mysqli;
-    $select_user_delivery = 'SELECT * FROM deliverys WHERE userid = '.$id.' AND status = 1 GROUP BY delivery_number ORDER BY id DESC LIMIT 10';
+    $select_user_delivery = 'SELECT d.*, c.slug AS category '
+        . 'FROM deliveries d '
+        . 'JOIN categories c ON c.id = d.category_id '
+        . 'WHERE d.userid = '.$id.' AND d.status = 1 '
+        . 'GROUP BY d.delivery_number ORDER BY d.id DESC LIMIT 10';
     $query = $mysqli->query($select_user_delivery);
     $orders = array();
     while ($row = $query->fetch_object()) {
@@ -183,28 +213,38 @@ function lastOrders($id) {
     return $orders;
 }
 
-function getDeliverys($dn) {
+function getDeliveries($dn) {
     global $mysqli;
-    $deliverys = array();
-    $select = 'SELECT * FROM deliverys WHERE delivery_number = '.$dn.' ORDER BY CAST(delivery_text AS DECIMAL), sauce';    
+    $deliveries = array();
+    $select = 'SELECT d.*, c.slug AS category '
+        . 'FROM deliveries d '
+        . 'JOIN categories c ON c.id = d.category_id '
+        . 'WHERE d.delivery_number = '.$dn.' '
+        . 'ORDER BY CAST(d.delivery_text AS DECIMAL), d.sauce';
     $query = $mysqli->query($select);
     while($row = $query->fetch_assoc()) {
         $userData = getUserData($row['userid']);
         $delivery = getDeliveryText($row['delivery_text']);
-        $deliverys[] = array(
+        $deliveries[] = array(
             'id' => $row['id'],
             'fullname' => $userData['firstname'].' '.$userData['lastname'],
             'delivery' => $delivery['sub_category'].' '.$delivery['item'],
             'size' => $delivery['size'],
             'extra' => $row['sauce'],
-            'price' => $delivery['prize'],
+            'price' => $delivery['price'],
             'userid' => $row['userid'],
             'status' => $row['status'],
             'locked' => $row['locked'],
-            'owner' => $row['owner']
+            'owner' => $row['owner'],
+            'category' => $row['category']
         );
     }
-    return $deliverys;
+    return $deliveries;
+}
+
+/** @deprecated Use getDeliveries() */
+function getDeliverys($dn) {
+    return getDeliveries($dn);
 }
 
 function getUserData($id) {
@@ -217,7 +257,10 @@ function getUserData($id) {
 
 function getDeliveryText($id) {
     global $mysqli;
-    $select = 'SELECT * FROM menue WHERE id = '.$id;
+    $select = 'SELECT m.*, c.slug AS category '
+        . 'FROM menu m '
+        . 'JOIN categories c ON c.id = m.category_id '
+        . 'WHERE m.id = '.$id;
     $query = $mysqli->query($select);
     
     return $query->fetch_assoc();
@@ -225,8 +268,11 @@ function getDeliveryText($id) {
 
 function getOpenOrders() {
     global $mysqli;
-    $select_deliverys = "SELECT * FROM deliverys WHERE status != '1' GROUP BY delivery_number";
-    $query = $mysqli->query($select_deliverys);
+    $select_deliveries = "SELECT d.*, c.slug AS category "
+        . "FROM deliveries d "
+        . "JOIN categories c ON c.id = d.category_id "
+        . "WHERE d.status != '1' GROUP BY d.delivery_number";
+    $query = $mysqli->query($select_deliveries);
     $orders = array();    
     while ($row = $query->fetch_assoc()) {
         $date = new DateTime();
@@ -246,8 +292,11 @@ function getOpenOrders() {
 
 function getUnlockedOrders() {
     global $mysqli;
-    $select_deliverys = "SELECT * FROM deliverys WHERE status != '1' AND locked != '1' GROUP BY delivery_number";
-    $query = $mysqli->query($select_deliverys);
+    $select_deliveries = "SELECT d.*, c.slug AS category "
+        . "FROM deliveries d "
+        . "JOIN categories c ON c.id = d.category_id "
+        . "WHERE d.status != '1' AND d.locked != '1' GROUP BY d.delivery_number";
+    $query = $mysqli->query($select_deliveries);
     $orders = array();
     while ($row = $query->fetch_assoc()) {
         $date = new DateTime();
@@ -267,7 +316,10 @@ function getUnlockedOrders() {
 
 function getSingleOrder($dn) {
     global $mysqli;
-    $select = "SELECT * FROM deliverys WHERE delivery_number = ?";
+    $select = "SELECT d.*, c.slug AS category "
+        . "FROM deliveries d "
+        . "JOIN categories c ON c.id = d.category_id "
+        . "WHERE d.delivery_number = ?";
     $stmt = $mysqli->prepare($select);
     $stmt->bind_param('s', $dn);
     $stmt->execute();
@@ -281,7 +333,7 @@ function total($dn) {
     $userids = array();
     $total = array();
     $items = array();
-    $selectUserid = 'SELECT DISTINCT userid FROM deliverys WHERE delivery_number = '.$dn;
+    $selectUserid = 'SELECT DISTINCT userid FROM deliveries WHERE delivery_number = '.$dn;
     $query = $mysqli->query($selectUserid);    
     while ($row = $query->fetch_assoc()) {
         $userids[] = $row['userid'];
@@ -290,7 +342,7 @@ function total($dn) {
         $total[$user]['total'] = 0;        
         $userData = getUserData($user);
         $total[$user]['fullname'] = $userData['firstname'].' '.$userData['lastname'];
-        $selectItems = 'SELECT delivery_text FROM deliverys WHERE delivery_number = '.$dn.' AND userid = '.$user;
+        $selectItems = 'SELECT delivery_text FROM deliveries WHERE delivery_number = '.$dn.' AND userid = '.$user;
         $query = $mysqli->query($selectItems);        
         while($row = $query->fetch_assoc()) {
             $items[] = $row['delivery_text'];
@@ -298,7 +350,7 @@ function total($dn) {
         
         foreach ($items as $item) {
             $itemData = getItem($item);
-            $total[$user]['total'] = $total[$user]['total'] + $itemData['prize'];
+            $total[$user]['total'] = $total[$user]['total'] + $itemData['price'];
         }
         $items = array();
     }
@@ -308,7 +360,10 @@ function total($dn) {
 
 function getItem($id) {
     global $mysqli;
-    $select = 'SELECT * FROM menue WHERE id = '.$id;
+    $select = 'SELECT m.*, c.slug AS category '
+        . 'FROM menu m '
+        . 'JOIN categories c ON c.id = m.category_id '
+        . 'WHERE m.id = '.$id;
     $query = $mysqli->query($select);
     return $query->fetch_assoc();
 }
@@ -317,7 +372,7 @@ function totalItems($dn) {
     global $mysqli;
     $items = array();
     $total = array();
-    $select = 'SELECT DISTINCT delivery_text FROM deliverys WHERE delivery_number = '.$dn;
+    $select = 'SELECT DISTINCT delivery_text FROM deliveries WHERE delivery_number = '.$dn;
     $query = $mysqli->query($select);
     while ($row = $query->fetch_assoc()) {
         $items[] = $row['delivery_text'];
@@ -330,7 +385,7 @@ function totalItems($dn) {
         } else {
             $total[$item]['item'] = $itemData['sub_category'].' '.$itemData['item'];
         }
-        $count = 'SELECT count(delivery_text) FROM deliverys WHERE delivery_text = '.$item.' AND delivery_number = '.$dn;
+        $count = 'SELECT count(delivery_text) FROM deliveries WHERE delivery_text = '.$item.' AND delivery_number = '.$dn;
         $query = $mysqli->query($count);
         $itemCount = $query->fetch_assoc();
         $total[$item]['count'] = $itemCount['count(delivery_text)'];
@@ -351,19 +406,28 @@ function getHelper() {
     return $helper;
 }
 
-function getMenue($category) {
+function getMenu($category) {
     global $mysqli;
-    $menue = array();
-    $select = 'SELECT * FROM menue WHERE category = ? ORDER BY sub_category ASC';
+    $menu = array();
+    $select = 'SELECT m.*, c.slug AS category '
+        . 'FROM menu m '
+        . 'JOIN categories c ON c.id = m.category_id '
+        . 'WHERE c.slug = ? '
+        . 'ORDER BY m.sub_category ASC';
     $stmt = $mysqli->prepare($select);
     $stmt->bind_param('s', $category);
     $stmt->execute();
     $result = $stmt->get_result();
     while ($row = $result->fetch_assoc()) {
-        $menue[] = $row;
+        $menu[] = $row;
     }
 
-    return $menue;
+    return $menu;
+}
+
+/** @deprecated Use getMenu() */
+function getMenue($category) {
+    return getMenu($category);
 }
 
 function saveOrder($order) {
@@ -371,6 +435,9 @@ function saveOrder($order) {
     $now = new DateTime('now');
     $extras = '';
     $insert_timestamp = $now->format('Y-m-d H:i:s');
+    $categoryId = isset($order['category_id'])
+        ? (int) $order['category_id']
+        : getCategoryIdBySlug($order['category']);
     if ($order['new_order'] == "1") {
         if($order['autolock_check'] == "1") {
             $autolock_time = new DateTime();
@@ -396,9 +463,9 @@ function saveOrder($order) {
                 }
             }
             $extras = substr($extras,1);
-            $insert = 'INSERT INTO deliverys (delivery_number, delivery_text, userid, sauce, owner, category, autolock, timestamp) VALUES (?,?,?,?,?,?,?,?)';
+            $insert = 'INSERT INTO deliveries (delivery_number, delivery_text, userid, sauce, owner, category_id, autolock, timestamp) VALUES (?,?,?,?,?,?,?,?)';
             $stmt = $mysqli->prepare($insert);
-            $stmt->bind_param('ssssssss', $order['dn'], $item, $order['userid'], $extras, $order['owner'], $order['category'], $autolock, $insert_timestamp);
+            $stmt->bind_param('sssssiss', $order['dn'], $item, $order['userid'], $extras, $order['owner'], $categoryId, $autolock, $insert_timestamp);
             $stmt->execute();
             $extras = "";
         }
@@ -450,7 +517,7 @@ function getHighscore() {
 
 function getOrderCount($id) {
     global $mysqli;
-    $select = 'SELECT count(DISTINCT delivery_number) FROM deliverys WHERE userid = '.$id;
+    $select = 'SELECT count(DISTINCT delivery_number) FROM deliveries WHERE userid = '.$id;
     $query = $mysqli->query($select);
     $result = $query->fetch_assoc();
 
@@ -459,7 +526,7 @@ function getOrderCount($id) {
 
 function getDeliverySum() {
     global $mysqli;
-    $select = 'SELECT count(DISTINCT delivery_number) FROM deliverys';
+    $select = 'SELECT count(DISTINCT delivery_number) FROM deliveries';
     $query = $mysqli->query($select);
     $result = $query->fetch_assoc();
 
@@ -512,7 +579,7 @@ function sendHelperMail($helperArray, $dn) {
     $betreff = "Abschluss einer SEC-Mjam Bestellung";
 
     $text = file_get_contents('mailTemplates/mailHelper.html');
-    $delivery = getDeliverys($dn);
+    $delivery = getDeliveries($dn);
     $ownerData = getUserData($delivery[0]['owner']);
     $points = getPointsFromDelivery($dn);
 
@@ -527,7 +594,7 @@ function sendHelperMail($helperArray, $dn) {
 
 function calcOwnerPoints($user) {
     global $mysqli;
-    $select = 'SELECT delivery_number FROM deliverys WHERE owner = '.$user.' GROUP BY delivery_number';
+    $select = 'SELECT delivery_number FROM deliveries WHERE owner = '.$user.' GROUP BY delivery_number';
     $query = $mysqli->query($select);
     if($query->num_rows != 0) {
         $total = 0;
@@ -543,7 +610,7 @@ function calcOwnerPoints($user) {
 
 function calcHelperPoints($user) {
     global $mysqli;
-    $select = 'SELECT delivery_number FROM deliverys WHERE helper LIKE \'%"'.$user.'"%\' GROUP BY delivery_number';
+    $select = 'SELECT delivery_number FROM deliveries WHERE helper LIKE \'%"'.$user.'"%\' GROUP BY delivery_number';
     $query = $mysqli->query($select);
     if($query->num_rows != 0) {
         $total = 0;
@@ -560,10 +627,13 @@ function calcHelperPoints($user) {
 function getPointsFromDelivery($dn) {
     global $mysqli;
     $pointsArray = parse_ini_file('config/pts.ini', TRUE);
-    $select = 'SELECT count(delivery_number), category FROM deliverys WHERE delivery_number = '.$dn;
+    $select = 'SELECT count(d.delivery_number) AS item_count, c.slug AS category '
+        . 'FROM deliveries d '
+        . 'JOIN categories c ON c.id = d.category_id '
+        . 'WHERE d.delivery_number = '.$dn;
     $query = $mysqli->query($select);
     $result = $query->fetch_assoc();
-    $count = $result['count(delivery_number)'];
+    $count = $result['item_count'];
     $points = $count * $pointsArray['pts'][$result['category']];
 
     return $points;

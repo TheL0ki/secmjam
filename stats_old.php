@@ -17,7 +17,7 @@ if(isset($_SESSION["user"])) {
         <link rel="stylesheet" href="config/style.css">
     </head>
     <?php
-    $select = "SELECT DISTINCT delivery_text FROM deliverys";
+    $select = "SELECT DISTINCT delivery_text FROM deliveries";
     $query = $mysqli->query($select);
     echo '<div style="max-width: 500px;">';
     echo '<table id="stat_table" style="width: 100%;">';
@@ -26,10 +26,10 @@ if(isset($_SESSION["user"])) {
     $count_arr = array();
     while($row = $query->fetch_object()) {
         $deltext = $row->delivery_text;
-        $select = "SELECT COUNT(delivery_text) FROM deliverys WHERE delivery_text = '$deltext'";
+        $select = "SELECT COUNT(delivery_text) FROM deliveries WHERE delivery_text = '$deltext'";
         $query_count = $mysqli->query($select);
         $count = $query_count->fetch_assoc();
-        $select_name = "SELECT * FROM menue WHERE id = '$deltext'";
+        $select_name = "SELECT * FROM menu WHERE id = '$deltext'";
         $query_names = $mysqli->query($select_name);
         $name = $query_names->fetch_assoc();
         $count_arr[$i]["count"] = $count["COUNT(delivery_text)"];
@@ -62,7 +62,10 @@ if(isset($_SESSION["user"])) {
     echo '<br>';
     echo '<table id="stat_table" style="width: 100%; max-width: inherit;">';
     echo '<th colspan=2>Top Kategorien</th>';
-    $select_food = "SELECT COUNT(DISTINCT delivery_number) AS count, category FROM deliverys GROUP BY category ORDER BY COUNT(DISTINCT delivery_number) DESC";
+    $select_food = "SELECT COUNT(DISTINCT d.delivery_number) AS count, c.slug AS category "
+                 . "FROM deliveries d "
+                 . "JOIN categories c ON c.id = d.category_id "
+                 . "GROUP BY c.slug ORDER BY COUNT(DISTINCT d.delivery_number) DESC";
     $query_food = $mysqli->query($select_food);
     $counter = 1;
     while($row = $query_food->fetch_assoc()) {
@@ -79,7 +82,7 @@ if(isset($_SESSION["user"])) {
     echo '</table>';
     
     $select_top_orderer = "SELECT COUNT(DISTINCT delivery_number) as count, userid, timestamp "
-                        . "FROM deliverys GROUP BY userid, MONTH(timestamp) "
+                        . "FROM deliveries GROUP BY userid, MONTH(timestamp) "
                         . "ORDER BY COUNT(DISTINCT delivery_number) DESC LIMIT 0,3";
     $query_top_orderer = $mysqli->query($select_top_orderer);
     

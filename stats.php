@@ -20,11 +20,11 @@ if(isset($_SESSION["user"])) {
     // Page Content comes here
     
     // Top 5 Bestellungen
-    $select = "SELECT COUNT(delivery_text) as Anzahl, delivery_text FROM deliverys GROUP BY delivery_text ORDER BY COUNT(delivery_text) DESC LIMIT 0,5";
+    $select = "SELECT COUNT(delivery_text) as Anzahl, delivery_text FROM deliveries GROUP BY delivery_text ORDER BY COUNT(delivery_text) DESC LIMIT 0,5";
     $query = $mysqli->query($select);
     $count_arr = array();
     while($row = $query->fetch_assoc()) {
-        $select = 'SELECT * FROM menue WHERE id = '.$row['delivery_text'];
+        $select = 'SELECT * FROM menu WHERE id = '.$row['delivery_text'];
         $query_food = $mysqli->query($select);
         $result = $query_food->fetch_assoc();
         if($result["size"] != "-") {
@@ -40,14 +40,14 @@ if(isset($_SESSION["user"])) {
     
     // Top 5 Bestellungen Persönlich
     $select = 'SELECT COUNT(delivery_text) as anzahl, delivery_text '
-            . 'FROM deliverys '
+            . 'FROM deliveries '
             . 'WHERE userid = '.$_SESSION['user']['id'].' '
             . 'GROUP BY delivery_text '
             . 'ORDER BY COUNT(delivery_text) DESC LIMIT 0,5';
     $query = $mysqli->query($select);
     $count_arr_pers = array();
     while($row = $query->fetch_assoc()) {
-        $select = 'SELECT * FROM menue WHERE id = '.$row['delivery_text'];
+        $select = 'SELECT * FROM menu WHERE id = '.$row['delivery_text'];
         $query_food = $mysqli->query($select);
         $result = $query_food->fetch_assoc();
         if($result["size"] != "-") {
@@ -62,7 +62,10 @@ if(isset($_SESSION["user"])) {
     }
     
     // Top Kategorien
-    $select_food = 'SELECT COUNT(DISTINCT delivery_number) AS count, category FROM deliverys GROUP BY category ORDER BY COUNT(DISTINCT delivery_number) DESC';
+    $select_food = 'SELECT COUNT(DISTINCT d.delivery_number) AS count, c.slug AS category '
+                 . 'FROM deliveries d '
+                 . 'JOIN categories c ON c.id = d.category_id '
+                 . 'GROUP BY c.slug ORDER BY COUNT(DISTINCT d.delivery_number) DESC';
     $query_food = $mysqli->query($select_food);
     $cat_arr = array();
     while($row = $query_food->fetch_assoc()) {
@@ -70,7 +73,11 @@ if(isset($_SESSION["user"])) {
     }
     
     //Top Kategorien persönlich
-    $select_food = 'SELECT COUNT(DISTINCT delivery_number) AS count, category FROM deliverys WHERE userid = '.$_SESSION['user']['id'].' GROUP BY category ORDER BY COUNT(DISTINCT delivery_number) DESC';
+    $select_food = 'SELECT COUNT(DISTINCT d.delivery_number) AS count, c.slug AS category '
+                 . 'FROM deliveries d '
+                 . 'JOIN categories c ON c.id = d.category_id '
+                 . 'WHERE d.userid = '.$_SESSION['user']['id'].' '
+                 . 'GROUP BY c.slug ORDER BY COUNT(DISTINCT d.delivery_number) DESC';
     $query_food = $mysqli->query($select_food);
     $cat_arr_pers = array();
     while($row = $query_food->fetch_assoc()) {
@@ -79,7 +86,7 @@ if(isset($_SESSION["user"])) {
     
     //Top Besteller
     $select_top_orderer = "SELECT COUNT(DISTINCT delivery_number) as count, userid, timestamp "
-                        . "FROM deliverys GROUP BY userid, MONTH(timestamp) "
+                        . "FROM deliveries GROUP BY userid, MONTH(timestamp) "
                         . "ORDER BY COUNT(DISTINCT delivery_number) DESC LIMIT 0,3";
     $query_top_orderer = $mysqli->query($select_top_orderer);
     $orderer_arr = array();

@@ -20,11 +20,11 @@ if(isset($_SESSION["user"])) {
     $id = filter_input(INPUT_GET, 'id', FILTER_SANITIZE_SPECIAL_CHARS);
     $owner = filter_input(INPUT_GET, 'owner', FILTER_SANITIZE_SPECIAL_CHARS);
     $dn = filter_input(INPUT_GET, 'dn', FILTER_SANITIZE_SPECIAL_CHARS);
-    $select_food = 'SELECT * FROM deliverys WHERE id = '.$id;
+    $select_food = 'SELECT * FROM deliveries WHERE id = '.$id;
     $query_food = $mysqli->query($select_food);
     $result = $query_food->fetch_assoc();
     //changeBalance($result['userid'], getPrice($result['delivery_text']));
-    $storno = "DELETE FROM deliverys WHERE id = '$id'";
+    $storno = "DELETE FROM deliveries WHERE id = '$id'";
     $query = $mysqli->query($storno);
     $smarty->assign('success', TRUE);
     header('Refresh:2; url=overview.php?dn='.$result['delivery_number']);

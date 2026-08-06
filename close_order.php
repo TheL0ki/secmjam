@@ -28,7 +28,7 @@ if(isset($_SESSION["user"])) {
                 if($dn != NULL) {
                     $helper_arr = filter_input(INPUT_POST, 'helper', FILTER_SANITIZE_SPECIAL_CHARS, FILTER_REQUIRE_ARRAY);
                     $owner = $_SESSION["user"]["id"];
-                    $close_order = "UPDATE deliverys SET status = '1' WHERE delivery_number = '$dn' AND owner = '$owner'";
+                    $close_order = "UPDATE deliveries SET status = '1' WHERE delivery_number = '$dn' AND owner = '$owner'";
                     $query = $mysqli->query($close_order);
                     if ($helper_arr != NULL) {
                         foreach($helper_arr as $id) {

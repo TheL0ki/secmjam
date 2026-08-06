@@ -25,10 +25,10 @@ if(isset($_SESSION["user"])) {
     $smarty->assign('success', FALSE);
 
     switch ($page) {
-        case 'menue':
+        case 'menu':
             $category = filter_input(INPUT_POST, 'food', FILTER_SANITIZE_SPECIAL_CHARS);
             $smarty->assign('category', $category);
-            $smarty->assign('menue', getMenue($category));
+            $smarty->assign('menu', getMenu($category));
             $smarty->assign('owner', $_SESSION['user']['id']);
             $smarty->assign('dn', date('U', time()));
             break;

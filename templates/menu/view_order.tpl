@@ -24,7 +24,7 @@
             <div class="row" style="margin-bottom: 20px;">
                 <div class="col-md-12">
                     <span style="font-size: 24px;">
-                        {if $deliverys.0.locked == 1}
+                        {if $deliveries.0.locked == 1}
                             <span class="glyphicon glyphicon-lock"></span>
                         {/if}
                         Bestellungen für den {$date_display}
@@ -49,7 +49,7 @@
                             </thead>
                             <tbody>
                                 {assign var=extraOutput value=''}
-                                {foreach item=delivery from=$deliverys}
+                                {foreach item=delivery from=$deliveries}
                                     <tr>
                                         <td>{$delivery.fullname}</td>
                                         <td>{$delivery.delivery}</td>
@@ -77,7 +77,7 @@
                                         </td>
                                         <td>€ {$delivery.price|number_format:2:",":"."}</td>
                                         <td>
-                                            {if $delivery.userid == $sessionUser AND $ownerID != $sessionUser AND $deliverys.0.locked != 1}
+                                            {if $delivery.userid == $sessionUser AND $ownerID != $sessionUser AND $deliveries.0.locked != 1}
                                                 <a href="storno.php?id={$delivery.id}">Storno</a>
                                             {/if}
                                         </td>
@@ -139,11 +139,11 @@
                 </div>
             </div>
             {if $ownerID == $sessionUser}
-                {if $deliverys.0.status != 1}
+                {if $deliveries.0.status != 1}
                     <div class="row">
                         <div class="col-xs-12">
-                            {if $deliverys.0.status != 1}
-                                {if $deliverys.0.locked == 1}
+                            {if $deliveries.0.status != 1}
+                                {if $deliveries.0.locked == 1}
                                     <a href="overview.php?dn={$dn}&do=unlock" class="btn btn-primary">Bestellung entsperren</a>
                                 {else}
                                     <a href="overview.php?dn={$dn}&do=lock" class="btn btn-primary">Bestellung sperren</a>

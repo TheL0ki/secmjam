@@ -32,7 +32,7 @@
             {else}
                 <div class="row">
                     <div class="col-md-4 col-xs-12">
-                        <form action="create_order.php?page=menue" method="post">
+                        <form action="create_order.php?page=menu" method="post">
                             <select class="form-control" name="food" onchange="this.form.submit()">
                                 <option></option>
                                 <option value="pizza">Pizza (Pizzakeller)</option>
@@ -45,7 +45,7 @@
                         </form>
                     </div>
                 </div>
-                {if $page == "menue"}
+                {if $page == "menu"}
                     <form action="create_order.php?page=save" method="post">
                         <div class="row" style="margin-top: 20px;">
                             <div class="col-xs-12">
@@ -78,13 +78,13 @@
                                                 {if $category != 'grill'}
                                                     <th>Extras</th>
                                                 {/if}
-                                                <th>Prize</th>
+                                                <th>Price</th>
                                                 <th>Amount</th>
                                                 <th>Check</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {foreach item=item from=$menue}
+                                            {foreach item=item from=$menu}
                                                 <tr>
                                                     {if $category != 'grill'}
                                                         <td>{$item.sub_category}</td>
@@ -121,7 +121,7 @@
                                                         {/if}
                                                         </td>
                                                     {/if}
-                                                    <td>€ {$item.prize|number_format:2:',':'.'}</td>
+                                                    <td>€ {$item.price|number_format:2:',':'.'}</td>
                                                     <td><input type="number" name="amount[{$item.id}]" min="1" max="5" value="1"></td>
                                                     <td><input type="checkbox" value="{$item.id}" name="foodid[]"></td>
                                                 </tr>

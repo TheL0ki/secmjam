@@ -48,7 +48,7 @@ if(isset($_SESSION["user"])) {
             $autolock = null;
         }
     } else {
-        $select_autolock = "SELECT * FROM deliverys WHERE delivery_number = '$order' AND owner = '$owner'";
+        $select_autolock = "SELECT * FROM deliveries WHERE delivery_number = '$order' AND owner = '$owner'";
         $query_autolock = $mysqli->query($select_autolock);
         $autolock = $query_autolock->fetch_object()->autolock;
     }
@@ -87,13 +87,14 @@ if(isset($_SESSION["user"])) {
     }
     $now = new DateTime('now');
     $insert_timestamp = $now->format('Y-m-d H:i:s');
+    $categoryId = getCategoryIdBySlug($category);
     foreach ($food as $foodid) {
         $foodid_amount = $foodid."_amount";
         $amount = filter_input(INPUT_POST, $foodid_amount, FILTER_SANITIZE_SPECIAL_CHARS);
         for($i=1; $i <= $amount; $i++) {
             $sauce_insert = $sauce_arr_2[$foodid];
-            $insert = " INSERT INTO deliverys (delivery_number, delivery_text, userid, sauce, owner, category, autolock, timestamp)
-                        VALUES ('$order', '$foodid', '$user', '$sauce_insert', '$owner', '$category', '$autolock', '$insert_timestamp')";
+            $insert = " INSERT INTO deliveries (delivery_number, delivery_text, userid, sauce, owner, category_id, autolock, timestamp)
+                        VALUES ('$order', '$foodid', '$user', '$sauce_insert', '$owner', '$categoryId', '$autolock', '$insert_timestamp')";
             $query = $mysqli->query($insert);
         }
     }

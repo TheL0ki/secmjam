@@ -4,3 +4,10 @@
 
 config/poll_result\.txt
 config/setup\.php
+
+vendor/
+templates_c/
+cache/
+configs/
+
+.env

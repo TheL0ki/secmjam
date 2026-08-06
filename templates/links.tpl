@@ -1,6 +1,6 @@
 <table class="links">
     <tr>
-        <td style="border: none;"><a href="menue.php">Menue</a></td>
+        <td style="border: none;"><a href="menu.php">Menu</a></td>
         <td style="border: none;"><a href="overview.php">Übersicht</a></td>
         <td style="border: none;"><a href="user_settings.php">Einstellungen</a></td>
         <td style="border: none;"><a href="highscore.php">Highscore</a></td>
