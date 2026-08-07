@@ -28,6 +28,8 @@ CREATE TABLE IF NOT EXISTS `users` (
     `lastname` VARCHAR(100) NOT NULL,
     `email` VARCHAR(255) NOT NULL,
     `password` VARCHAR(255) NOT NULL,
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     `balance` DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
     `notify` TINYINT(1) NOT NULL DEFAULT 1,
     `vote` TINYINT(1) NOT NULL DEFAULT 0,
@@ -37,8 +39,8 @@ CREATE TABLE IF NOT EXISTS `users` (
     UNIQUE KEY `uq_users_uuid` (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT INTO `users` (`uuid`, `user`, `firstname`, `lastname`, `email`, `password`, `balance`, `notify`, `vote`, `active`, `points`) VALUES
-    (UUID(), 'admin', 'Admin', 'Admin', 'admin@example.com', '$2y$12$rxls5mPNJ7p9wSQ0thpS3etYJH1GxuCQtFXxFfiROHsAqGPgJlIma', 0.00, 1, 0, 1, 0);
+INSERT INTO `users` (`uuid`, `user`, `firstname`, `lastname`, `email`, `password`, `created_at`, `updated_at`, `balance`, `notify`, `vote`, `active`, `points`) VALUES
+    (UUID(), 'admin', 'Admin', 'Admin', 'admin@example.com', '$2y$12$rxls5mPNJ7p9wSQ0thpS3etYJH1GxuCQtFXxFfiROHsAqGPgJlIma', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 0.00, 1, 0, 1, 0);
 
 CREATE TABLE IF NOT EXISTS `menu` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
