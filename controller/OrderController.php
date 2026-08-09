@@ -2,6 +2,8 @@
 
 namespace App\Controllers;
 
+use Ramsey\Uuid\Uuid;
+
 class OrderController
 {
     public function __construct(
@@ -21,25 +23,32 @@ class OrderController
         $this->smarty->display('orders/chooseCategory.tpl');
     }
 
-    public function showMenu(int $category)
+    public function showMenu(int $category_id)
     {
         $menu = $this->capsule
             ->table('menu')
-            ->where('category_id', $category)
+            ->where('category_id', $category_id)
             ->leftJoin('categories', 'menu.category_id', '=', 'categories.id')
             ->get();
-        
-        $extras = $this->capsule->table('extras')->where('category_id', $category)->get();
+        $extras = $this->capsule->table('extras')->where('category_id', $category_id)->get();
         $this->smarty->assign([
             'menu' => $menu->toArray(),
-            'extras' => $extras->toArray()
+            'extras' => $extras->toArray(),
+            'category_id' => $category_id
         ]);
         $this->smarty->display('orders/showMenu.tpl');
     }
 
     public function createOrder()
     {
-        
+        dd($_REQUEST);
+        $this->capsule->table('orders')->insert([
+            'uuid' => Uuid::uuid4(),
+            'user_uuid' => $_SESSION['user']->uuid,
+            'category_id' => $_POST['category_id'],
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s')
+        ]);
     }
 
     public function addToOrder()

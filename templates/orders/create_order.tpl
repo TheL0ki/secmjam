@@ -25,7 +25,7 @@
             </div>
         </div>
         {if $page == "menu"}
-            <form action="create_order.php?page=save" method="post">
+            <form action="/orders" method="post">
                 <div class="row" style="margin-top: 20px;">
                     <div class="col-xs-12">
                         <input type="checkbox" name="check" value="1">
@@ -36,11 +36,6 @@
                         Infomail aussenden?
                     </div>
                 </div>
-                {*<div class="row">
-                    <div class='col-xs-12'>
-                        Dein Guthaben € {$userBalance|number_format:2:',':'.'}
-                    </div>
-                </div>*}
                 <div class="row" style="margin-top: 20px;">
                     <div class="col-xs-12">
                         <div class="table-responsive">
