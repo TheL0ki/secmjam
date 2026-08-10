@@ -143,17 +143,34 @@ class OrderController
 
     public function show(string $order_uuid)
     {
-        $order = $this->capsule->table('orders')->where('uuid', $order_uuid)->first();
-        $orderItems = $this->capsule->table('order_items')->where('order_uuid', $order_uuid)->get();
+        $order = $this->capsule->table('orders')
+            ->where('orders.uuid', $order_uuid)
+            ->leftJoin('users', 'orders.owner_uuid', '=', 'users.uuid')
+            ->select('orders.*', 'users.user as ownerUser')
+            ->first();
+        $orderItems = $this->capsule->table('order_items')
+            ->where('order_uuid', $order_uuid)
+            ->leftJoin('menu', 'order_items.item_id', '=', 'menu.id')
+            ->select('order_items.*', 'menu.sub_category as sub_category', 'menu.item as item', 'menu.size as size', 'menu.price as price')
+            ->get();
         $extras = $this->capsule->table('order_item_extras')
             ->whereIn('order_item_id', $orderItems->pluck('id'))
             ->leftJoin('extras', 'order_item_extras.extra_id', '=', 'extras.id')
             ->select('order_item_extras.*', 'extras.name as extraName')
             ->get();
+
+        $total = $this->total($order_uuid);
+        $totalSum = array_sum(array_column($total, 'total'));
+
         $this->smarty->assign([
             'order' => $order,
             'orderItems' => $orderItems,
-            'extras' => $extras
+            'extras' => $extras,
+            'totalItems' => $this->totalItems($order_uuid),
+            'total' => $total,
+            'totalSum' => $totalSum,
+            'helperArray' => $this->getHelper($order_uuid),
+            'sessionUser' => $_SESSION['user']->uuid
         ]);
         $this->smarty->display('orders/showOrder.tpl');
     }
@@ -196,4 +213,55 @@ class OrderController
         $this->capsule->table('orders')->where('uuid', $order_uuid)->update(['open' => 0]);
         header('Location: /orders');
     }
+
+    public function totalItems(string $order_uuid)
+    {
+        $orderItems = $this->capsule->table('order_items')
+            ->where('order_uuid', $order_uuid)
+            ->leftJoin('menu', 'order_items.item_id', '=', 'menu.id')
+            ->select('order_items.*', 'menu.sub_category as sub_category', 'menu.item as item', 'menu.size as size', 'menu.price as price')
+            ->get();
+        
+        $totalItems = [];
+        foreach ($orderItems as $orderItem) {
+            $totalItems[$orderItem->item_id]['item'] = $orderItem->sub_category . ' ' . $orderItem->item . ' (' . $orderItem->size . ')';
+            $amount = $this->capsule->table('order_items')
+                ->where('item_id', $orderItem->item_id)
+                ->where('order_uuid', $order_uuid)
+                ->sum('amount');
+            $totalItems[$orderItem->item_id]['amount'] = $amount ?? 0;
+        }
+
+        return $totalItems;
+
+    }
+
+    public function total(string $order_uuid)
+    {
+        $orderItems = $this->capsule->table('order_items')
+            ->where('order_uuid', $order_uuid)
+            ->leftJoin('menu', 'order_items.item_id', '=', 'menu.id')
+            ->leftJoin('users', 'order_items.item_owner_uuid', '=', 'users.uuid')
+            ->select('order_items.*', 'menu.sub_category as sub_category', 'menu.item as item', 'menu.size as size', 'menu.price as price', 'users.user as ownerUser')
+            ->get();
+        $total = [];
+        foreach ($orderItems as $orderItem) {
+            $total[$orderItem->ownerUser]['total'] = 0;
+            $total[$orderItem->ownerUser]['total'] += $orderItem->price * $orderItem->amount;
+        }
+        return $total;
+    }
+
+    public function getHelper(string $order_uuid)
+    {
+        $helpers = $this->capsule->table('order_items')
+            ->where('order_uuid', $order_uuid)
+            ->select('item_owner_uuid')
+            ->distinct()
+            ->leftJoin('users', 'order_items.item_owner_uuid', '=', 'users.uuid')
+            ->select('users.uuid as uuid', 'users.user as user')
+            ->get();
+        return $helpers->toArray();
+    }
+    
 }
