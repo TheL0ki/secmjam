@@ -13,4 +13,14 @@ class MainController
     {        
         $this->smarty->display('main.tpl');
     }
+
+    public function showHighscore()
+    {
+        $this->smarty->display('highscore.tpl');
+    }
+
+    public function showStatistics()
+    {
+        $this->smarty->display('stats.tpl');
+    }
 }

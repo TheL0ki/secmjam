@@ -3,51 +3,38 @@
 {block name="title"}Bestellungen - SEC-Mjam{/block}
 
 {block name="content"}
-    {if $page == 'save' AND $success == TRUE}
-        <div class="row">
-            <div class="col-md-12">
-                <div class="alert alert-success">
-                    <b>Bestellung erfolgreich gespeichert</b>, du wirst weitergeleitet.
-                    <meta http-equiv="refresh" content="2; url=overview.php?dn={$dn}" />
-                </div>
-            </div>
-        </div>
-    {elseif $page == 'save' AND $error == TRUE}
-        <div class="row">
-            <div class="col-md-12">
-                <div class="alert alert-error">
-                    <b>Etwas ist schief gelaufen</b>, bitte versuche es <a href="menu.php">nocheinmal</a>.
-                </div>
-            </div>
-        </div>
-    {else}
-        {if $orders == NULL}
-            <div class="row">
-                <div class="col-xs-12">
-                    Keine offenen Bestellungen<br>
-                    <br>
-                    <a href="/orders/new" class="btn btn-primary">Neue Bestellung anlegen</a>
-                </div>
-            </div>
-        {else}
-            <div class="row">
-                <div class="col-xs-12">
-                    <form action="menu.php?page=menu" method="post">
-                        <div class="row">
-                            <div class="col-md-4 col-xs-12">
-                                <select class="form-control" name="dn" onchange="this.form.submit()">
-                                    <option></option>
-                                {foreach item=order from=$orders}
-                                    {if $order.locked != 1}
-                                        <option value="{$order.dn}">{$order.date_output} - {$order.category|capitalize} - {$order.ownerFullname}</option>
-                                    {/if}
+    <div class="row">
+        <div class="col-xs-12">
+            {if $open_orders == NULL}
+                Keine offenen Bestellungen<br>
+                <br>                
+            {else}
+                <form action="/orders/add" method="post">
+                    <div class="row">
+                        <div class="col-md-4 col-xs-12">
+                            <select class="form-control" name="order_uuid" onchange="this.form.submit()">
+                                <option></option>
+                                {foreach $open_orders as $order}
+                                    <option value="{$order->uuid}">{$order->created_at} - {$order->categoryName} - {$order->ownerUser|capitalize}</option>
                                 {/foreach}
-                                </select>
-                            </div>
+                            </select>
                         </div>
-                    </form>
-                </div>
-            </div>
-        {/if}
-    {/if}
+                    </div>
+                </form>
+            {/if}                
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <a href="/orders/new" class="btn btn-primary">Neue Bestellung anlegen</a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            Meine letzten 10 Abgeschlossenen Bestellungen:<br><br>
+            {foreach item=order from=$last_orders}
+                <a href='/orders/show/{$order->uuid}'>{$order->created_at} - {$order->categoryName|capitalize}</a><br>
+            {/foreach}
+        </div>
+    </div>
 {/block}

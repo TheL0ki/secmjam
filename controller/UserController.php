@@ -62,4 +62,19 @@ class UserController
     {
         $this->smarty->display('user/changePassword.tpl');
     }
+
+    public function showRegisterForm()
+    {
+        $this->smarty->display('user/register.tpl');
+    }
+
+    public function register()
+    {
+        
+    }
+
+    public function forgotPassword()
+    {
+        $this->smarty->display('user/forgotPassword.tpl');
+    }
 }

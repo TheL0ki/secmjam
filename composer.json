@@ -4,7 +4,7 @@
         "symfony/dotenv": "^8.1",
         "phpmailer/phpmailer": "^7.1",
         "illuminate/database": "^13.24",
-        "respect/validation": "^2.5",
+        "respect/validation": "3.1.2",
         "php-di/php-di": "^7.1",
         "ramsey/uuid": "^4.9"
     },

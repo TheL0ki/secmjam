@@ -12,12 +12,14 @@ return [
         '/orders'   => [OrderController::class, 'index'],
         '/orders/new' => [OrderController::class, 'chooseCategory'],
         '/orders/menu/{category_id:int}' => [OrderController::class, 'showMenu'],
+        '/orders/show/{order_uuid:uuid}' => [OrderController::class, 'show'],
         '/user/settings' => [UserController::class, 'userSettings'],
     ],
     'POST' => [
         '/login'  => [UserController::class, 'authenticate'],
-        '/orders' => [OrderController::class, 'createOrder'],
         '/user/settings' => [UserController::class, 'updateUserSettings'],
+        '/orders' => [OrderController::class, 'createOrder'],
+        '/orders/add' => [OrderController::class, 'addToOrder'],
 
     ],
 ];
