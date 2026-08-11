@@ -23,6 +23,7 @@ class OrderController
             ->get();
         $last_orders = $this->capsule->table('orders')
             ->where('owner_uuid', $_SESSION['user']->uuid)
+            ->where('open', 0)
             ->leftJoin('categories', 'orders.category_id', '=', 'categories.id')
             ->select('orders.*', 'categories.name as categoryName')
             ->orderBy('orders.created_at', 'desc')
@@ -61,23 +62,26 @@ class OrderController
 
     public function createOrder()
     {
+
+        $_POST['item'] = array_filter($_POST['item'] ?? [], fn($row) => isset($row['checked']));
+
         try {
             v::key('order_uuid', v::undefOr(v::uuid()))
                 ->key('category_id', v::intVal()->greaterThanOrEqual(1))
                 ->key('item', v::arrayType()->each(
-                    v::arrayType()
-                        ->key('amount', v::intVal()->between(1, 5))
+                    v::arrayType()                        
                         ->keyOptional('extras', v::arrayType()->each(v::undefOr(v::intVal())))
+                        ->key('amount', v::intVal()->between(1, 5))
                         ->keyOptional('checked', v::not(v::blank()))
                 ))
                 ->assert($_POST);
         } catch (ValidationException $e) {
             echo 'Error: ' . $e->getMessage();
+            dd($_POST);
             die;
         }
 
         $order_uuid = $_POST['order_uuid'] ?? NULL;
-        $items = array_filter($_POST['item'] ?? [], fn($row) => isset($row['checked']));
 
         $attrs = [
             'uuid' => $order_uuid,
@@ -94,7 +98,7 @@ class OrderController
                 'open' => 1
             ]);
         }
-        foreach ($items as $item_id => $item) {
+        foreach ($_POST['item'] as $item_id => $item) {
             $orderItemId = $this->capsule->table('order_items')->insertGetId([
                 'order_uuid' => $order_uuid,
                 'item_id' => $item_id,
@@ -246,7 +250,11 @@ class OrderController
             ->get();
         $total = [];
         foreach ($orderItems as $orderItem) {
-            $total[$orderItem->ownerUser]['total'] = 0;
+            if (!isset($total[$orderItem->ownerUser])) {
+                $total[$orderItem->ownerUser] = [
+                    'total' => 0
+                ];
+            }
             $total[$orderItem->ownerUser]['total'] += $orderItem->price * $orderItem->amount;
         }
         return $total;
