@@ -35,3 +35,4 @@ $smarty->setConfigDir('configs');
 $smarty->setCacheDir('cache');
 $smarty->assign('current_site', $_SERVER['REQUEST_URI']);
 $smarty->registerPlugin('modifier', 'array_key_exists', 'array_key_exists');
+$smarty->registerPlugin('modifier', 'str_starts_with', 'str_starts_with');
