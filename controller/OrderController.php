@@ -43,92 +43,66 @@ class OrderController
         $this->smarty->display('orders/chooseCategory.tpl');
     }
 
-    public function showMenu(int $category_id)
-    {
-        $menu = $this->capsule
-            ->table('menu')
-            ->where('category_id', $category_id)
-            ->leftJoin('categories', 'menu.category_id', '=', 'categories.id')
-            ->select('menu.*', 'categories.id as category_id', 'categories.multiple_extras as multiple_extras')
-            ->get();
-        $extras = $this->capsule->table('extras')->where('category_id', $category_id)->get();
-        $this->smarty->assign([
-            'menu' => $menu->toArray(),
-            'extras' => $extras->toArray(),
-            'category_id' => $category_id
-        ]);
-        $this->smarty->display('orders/showMenu.tpl');
-    }
-
     public function createOrder()
     {
-
-        $_POST['item'] = array_filter($_POST['item'] ?? [], fn($row) => isset($row['checked']));
-
         try {
-            v::key('order_uuid', v::undefOr(v::uuid()))
-                ->key('category_id', v::intVal()->greaterThanOrEqual(1))
-                ->key('item', v::arrayType()->each(
-                    v::arrayType()                        
-                        ->keyOptional('extras', v::arrayType()->each(v::undefOr(v::intVal())))
-                        ->key('amount', v::intVal()->between(1, 5))
-                        ->keyOptional('checked', v::not(v::blank()))
-                ))
+            v::key('category_id', v::intVal()->greaterThanOrEqual(1))
+                ->keyOptional('autolock', v::stringType())
+                ->keyOptional('infomail', v::equals('1'))
                 ->assert($_POST);
         } catch (ValidationException $e) {
             echo 'Error: ' . $e->getMessage();
-            dd($_POST);
             die;
         }
 
-        $order_uuid = $_POST['order_uuid'] ?? NULL;
+        $autolock = null;
+        if (!empty($_POST['autolock'])) {
+            $parsed = \DateTime::createFromFormat('Y-m-d\TH:i', $_POST['autolock'])
+                ?: \DateTime::createFromFormat('Y-m-d\TH:i:s', $_POST['autolock']);
+            if (!$parsed) {
+                echo 'Error: Invalid autolock datetime';
+                die;
+            }
+            $autolock = $parsed->format('Y-m-d H:i:s');
+        }
 
-        $attrs = [
+        $order_uuid = Uuid::uuid4()->toString();
+        $category_id = (int) $_POST['category_id'];
+
+        $this->capsule->table('orders')->insert([
             'uuid' => $order_uuid,
             'owner_uuid' => $_SESSION['user']->uuid,
-            'category_id' => $_POST['category_id'],
-        ];
-        $order = $this->capsule->table('orders')->where($attrs)->first();
-        if (!$order) {
-            $order_uuid = Uuid::uuid4();
-            $this->capsule->table('orders')->insert([
-                'uuid' => $order_uuid,
-                'owner_uuid' => $_SESSION['user']->uuid,
-                'category_id' => $_POST['category_id'],
-                'open' => 1
-            ]);
+            'category_id' => $category_id,
+            'open' => 1,
+            'locked' => 0,
+            'autolock' => $autolock,
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s'),
+        ]);
+
+        if (!empty($_POST['infomail'])) {
+            $category = $this->capsule->table('categories')->where('id', $category_id)->first();
+            /* $this->sendInfoMail(
+                $_SESSION['user'],
+                $category->name ?? '',
+                $autolock !== null,
+                $autolock ? date('d.m.Y H:i', strtotime($autolock)) : '00:00'
+            ); */
         }
-        foreach ($_POST['item'] as $item_id => $item) {
-            $orderItemId = $this->capsule->table('order_items')->insertGetId([
-                'order_uuid' => $order_uuid,
-                'item_id' => $item_id,
-                'item_owner_uuid' => $_SESSION['user']->uuid,
-                'amount' => $item['amount'],
-                'created_at' => date('Y-m-d H:i:s'),
-                'updated_at' => date('Y-m-d H:i:s')
-            ]);
-            
-            $extraIds = array_filter($item['extras'] ?? [], fn($id) => $id !== '' && $id !== null);
-            foreach ($extraIds as $extraId) {
-                $this->capsule->table('order_item_extras')->insert([
-                    'order_item_id' => $orderItemId,
-                    'extra_id' => (int) $extraId,
-                ]);
-            }
-        }
-        header('Location: /orders');
+
+        header('Location: /orders/' . $order_uuid . '/menu');
+        exit;
     }
 
-    public function addToOrder()
+    public function showMenu(string $order_uuid)
     {
-        try {
-            v::key('order_uuid', v::uuid())
-                ->assert($_POST);
-        } catch (ValidationException $e) {
-            echo 'Error: ' . $e->getMessage();
-            die;
+        $order = $this->capsule->table('orders')->where('uuid', $order_uuid)->first();
+        if (!$order) {
+            http_response_code(404);
+            $this->smarty->display('error/404.tpl');
+            return;
         }
-        $order = $this->capsule->table('orders')->where('uuid', $_POST['order_uuid'])->first();
+
         $menu = $this->capsule
             ->table('menu')
             ->where('category_id', $order->category_id)
@@ -140,9 +114,62 @@ class OrderController
             'menu' => $menu->toArray(),
             'extras' => $extras->toArray(),
             'category_id' => $order->category_id,
-            'order' => $order
+            'order' => $order,
         ]);
         $this->smarty->display('orders/showMenu.tpl');
+    }
+
+    public function addItems()
+    {
+        $_POST['item'] = array_filter($_POST['item'] ?? [], fn($row) => isset($row['checked']));
+
+        try {
+            v::key('order_uuid', v::uuid())
+                ->key('category_id', v::intVal()->greaterThanOrEqual(1))
+                ->key('item', v::arrayType()->each(
+                    v::arrayType()
+                        ->keyOptional('extras', v::arrayType()->each(v::undefOr(v::intVal())))
+                        ->key('amount', v::intVal()->between(1, 5))
+                        ->keyOptional('checked', v::not(v::blank()))
+                ))
+                ->assert($_POST);
+        } catch (ValidationException $e) {
+            echo 'Error: ' . $e->getMessage();
+            dd($_POST);
+            die;
+        }
+
+        $order_uuid = $_POST['order_uuid'];
+        $order = $this->capsule->table('orders')->where([
+            'uuid' => $order_uuid,
+            'category_id' => $_POST['category_id'],
+        ])->first();
+
+        if (!$order) {
+            echo 'Error: Order not found';
+            die;
+        }
+
+        foreach ($_POST['item'] as $item_id => $item) {
+            $orderItemId = $this->capsule->table('order_items')->insertGetId([
+                'order_uuid' => $order_uuid,
+                'item_id' => $item_id,
+                'item_owner_uuid' => $_SESSION['user']->uuid,
+                'amount' => $item['amount'],
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ]);
+
+            $extraIds = array_filter($item['extras'] ?? [], fn($id) => $id !== '' && $id !== null && $id !== 'false');
+            foreach ($extraIds as $extraId) {
+                $this->capsule->table('order_item_extras')->insert([
+                    'order_item_id' => $orderItemId,
+                    'extra_id' => (int) $extraId,
+                ]);
+            }
+        }
+        header('Location: /orders/show/' . $order_uuid);
+        exit;
     }
 
     public function show(string $order_uuid)
@@ -205,17 +232,24 @@ class OrderController
         header('Location: /orders');
     }
 
-    public function closeOrder(string $order_uuid)
+    public function closeOrder()
     {
         try {
             v::key('order_uuid', v::uuid())
+                ->keyOptional('helper', v::arrayType()->each(v::uuid()))
                 ->assert($_POST);
         } catch (ValidationException $e) {
             echo 'Error: ' . $e->getMessage();
             die;
         }
-        $this->capsule->table('orders')->where('uuid', $order_uuid)->update(['open' => 0]);
-        header('Location: /orders');
+        $this->capsule->table('orders')->where('uuid', $_POST['order_uuid'])->update(['open' => 0, 'locked' => 1]);
+        foreach ($_POST['helper'] as $helper) {
+            $this->capsule->table('helper')->insert([
+                'user_uuid' => $helper,
+                'order_uuid' => $_POST['order_uuid'],
+            ]);
+        }
+        header('Location: /orders/show/' . $_POST['order_uuid']);
     }
 
     public function totalItems(string $order_uuid)
@@ -271,5 +305,35 @@ class OrderController
             ->get();
         return $helpers->toArray();
     }
-    
+
+    private function sendInfoMail(object $owner, string $category, bool $hasAutolock = false, string $time = '00:00'): void
+    {
+        $receivers = $this->capsule->table('users')
+            ->where('notify', 1)
+            ->where('active', 1)
+            ->pluck('email');
+
+        $ownerFullName = trim(($owner->firstname ?? '') . ' ' . ($owner->lastname ?? ''));
+        if ($ownerFullName === '') {
+            $ownerFullName = $owner->user ?? '';
+        }
+
+        $template = $hasAutolock ? 'mailTemplates/mailTime.html' : 'mailTemplates/mailNoTime.html';
+        $text = file_get_contents($template);
+        $text = str_replace('[time]', $time, $text);
+        $text = str_replace('[name]', $ownerFullName, $text);
+        $text = str_replace('[mail_food]', ucfirst($category), $text);
+
+        $headers = [
+            'MIME-Version: 1.0',
+            'Content-Type: text/html; charset=UTF-8',
+            'From: SEC-Mjam <no-reply@loki-net.at>',
+            'Reply-To: SEC-Mjam <no-reply@loki-net.at>',
+            'X-Mailer: PHP/' . phpversion(),
+        ];
+
+        foreach ($receivers as $receiver) {
+            mail($receiver, 'Neue SEC-Mjam Bestellung', $text, implode("\r\n", $headers));
+        }
+    }
 }

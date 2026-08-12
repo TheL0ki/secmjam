@@ -1,5 +1,5 @@
 -- Migration: create core tables for SEC-Mjam
--- Derived from SQL usage across PHP (mainly config/functions.php)
+-- Reflects the current database layout (schema only, no seed data)
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
@@ -8,18 +8,14 @@ CREATE TABLE IF NOT EXISTS `categories` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
     `slug` VARCHAR(50) NOT NULL,
     `name` VARCHAR(100) NOT NULL,
+    `multiple_extras` TINYINT(1) NOT NULL DEFAULT 0,
+    `points` INT NOT NULL DEFAULT 0,
+    `active` TINYINT(1) NOT NULL DEFAULT 1,	
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uq_categories_slug` (`slug`),
-    UNIQUE KEY `uq_categories_id` (`id`)
+    UNIQUE KEY `uq_categories_slug` (`slug`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-INSERT INTO `categories` (`id`, `slug`, `name`) VALUES
-    (1, 'noodles', 'Noodles'),
-    (2, 'pizza', 'Pizza'),
-    (3, 'kebap', 'Kebap'),
-    (4, 'schnitzel', 'Schnitzel'),
-    (5, 'grill', 'Grill'),
-ON DUPLICATE KEY UPDATE `name` = VALUES(`name`);
 
 CREATE TABLE IF NOT EXISTS `users` (
     `uuid` UUID NOT NULL,
@@ -28,19 +24,18 @@ CREATE TABLE IF NOT EXISTS `users` (
     `lastname` VARCHAR(100) NOT NULL,
     `email` VARCHAR(255) NOT NULL,
     `password` VARCHAR(255) NOT NULL,
-    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     `balance` DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
     `notify` TINYINT(1) NOT NULL DEFAULT 1,
     `vote` TINYINT(1) NOT NULL DEFAULT 0,
     `active` TINYINT(1) NOT NULL DEFAULT 1,
-    `points` INT NOT NULL DEFAULT 0
+    `points` INT NOT NULL DEFAULT 0,
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`uuid`),
-    UNIQUE KEY `uq_users_uuid` (`uuid`)
+    UNIQUE KEY `uq_users_user` (`user`),
+    KEY `idx_users_active_lastname` (`active`, `lastname`),
+    KEY `idx_users_active_points` (`active`, `points`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-INSERT INTO `users` (`uuid`, `user`, `firstname`, `lastname`, `email`, `password`, `created_at`, `updated_at`, `balance`, `notify`, `vote`, `active`, `points`) VALUES
-    (UUID(), 'admin', 'Admin', 'Admin', 'admin@example.com', '$2y$12$rxls5mPNJ7p9wSQ0thpS3etYJH1GxuCQtFXxFfiROHsAqGPgJlIma', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 0.00, 1, 0, 1, 0);
 
 CREATE TABLE IF NOT EXISTS `menu` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -54,27 +49,69 @@ CREATE TABLE IF NOT EXISTS `menu` (
     CONSTRAINT `fk_menu_category` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS `deliveries` (
+CREATE TABLE IF NOT EXISTS `extras` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `delivery_number` VARCHAR(32) NOT NULL COMMENT 'Unix timestamp used as order id',
-    `delivery_text` VARCHAR(32) NOT NULL COMMENT 'Reference to menu.id',
-    `userid` INT UNSIGNED NOT NULL,
-    `sauce` VARCHAR(255) NOT NULL DEFAULT '',
-    `owner` INT UNSIGNED NOT NULL,
     `category_id` INT UNSIGNED NOT NULL,
-    `autolock` DATETIME NULL DEFAULT NULL,
-    `timestamp` DATETIME NOT NULL,
-    `status` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '0=open, 1=closed',
-    `locked` TINYINT(1) NOT NULL DEFAULT 0,
-    `helper` TEXT NULL DEFAULT NULL COMMENT 'Pipe-separated quoted user ids',
+    `slug` VARCHAR(50) NOT NULL,
+    `name` VARCHAR(128) NOT NULL,
+    `active` TINYINT(1) NOT NULL DEFAULT 1,
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
-    KEY `idx_deliveries_dn` (`delivery_number`),
-    KEY `idx_deliveries_userid` (`userid`),
-    KEY `idx_deliveries_owner` (`owner`),
-    KEY `idx_deliveries_status_locked` (`status`, `locked`),
-    KEY `idx_deliveries_category` (`category_id`),
-    KEY `idx_deliveries_autolock` (`autolock`),
-    CONSTRAINT `fk_deliveries_category` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`)
+    KEY `fk_extras_category` (`category_id`),
+    CONSTRAINT `fk_extras_category` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+
+CREATE TABLE IF NOT EXISTS `orders` (
+    `uuid` UUID NOT NULL,
+    `owner_uuid` UUID NOT NULL,
+    `category_id` INT UNSIGNED NOT NULL,
+    `open` TINYINT(1) NOT NULL DEFAULT 1,
+    `locked` TINYINT(1) NOT NULL DEFAULT 0,
+    `autolock` DATETIME NULL DEFAULT NULL,
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`uuid`),
+    KEY `fk_orders_user` (`owner_uuid`),
+    KEY `fk_orders_category` (`category_id`),
+    KEY `idx_orders_autolock` (`autolock`),
+    CONSTRAINT `fk_orders_user` FOREIGN KEY (`owner_uuid`) REFERENCES `users` (`uuid`) ON DELETE NO ACTION ON UPDATE CASCADE,
+    CONSTRAINT `fk_orders_category` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`) ON DELETE NO ACTION ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+
+CREATE TABLE IF NOT EXISTS `order_items` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `order_uuid` UUID NOT NULL,
+    `item_id` INT UNSIGNED NOT NULL,
+    `item_owner_uuid` UUID NOT NULL,
+    `amount` INT(16) NOT NULL,
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY `fk_menu_item` (`item_id`),
+    KEY `fk_order_item` (`order_uuid`),
+    KEY `fk_user_item` (`item_owner_uuid`),
+    CONSTRAINT `fk_menu_item` FOREIGN KEY (`item_id`) REFERENCES `menu` (`id`) ON UPDATE CASCADE,
+    CONSTRAINT `fk_order_item` FOREIGN KEY (`order_uuid`) REFERENCES `orders` (`uuid`) ON UPDATE CASCADE,
+    CONSTRAINT `fk_user_item` FOREIGN KEY (`item_owner_uuid`) REFERENCES `users` (`uuid`) ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `order_item_extras` (
+    `order_item_id` INT UNSIGNED NOT NULL,
+    `extra_id` INT UNSIGNED NOT NULL,
+    PRIMARY KEY (`order_item_id`, `extra_id`),
+    KEY `extra_id` (`extra_id`),
+    CONSTRAINT `fk_order_item_extras_order_item` FOREIGN KEY (`order_item_id`) REFERENCES `order_items` (`id`),
+    CONSTRAINT `fk_order_item_extras_extra` FOREIGN KEY (`extra_id`) REFERENCES `extras` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+
+CREATE TABLE IF NOT EXISTS `helper` (
+    `user_uuid` UUID NOT NULL,
+    `order_uuid` UUID NOT NULL,
+    PRIMARY KEY (`user_uuid`, `order_uuid`),
+    KEY `order_uuid` (`order_uuid`),
+    CONSTRAINT `fk_helper_user` FOREIGN KEY (`user_uuid`) REFERENCES `users` (`uuid`) ON UPDATE CASCADE,
+    CONSTRAINT `fk_helper_order` FOREIGN KEY (`order_uuid`) REFERENCES `orders` (`uuid`) ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 SET FOREIGN_KEY_CHECKS = 1;

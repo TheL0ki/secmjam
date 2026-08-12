@@ -4,7 +4,7 @@
 
 {block name=content}
     <div class="row" style="margin-bottom: 20px;">
-        <div class="col-md-12">
+        <div class="col-md-6">
             <span style="font-size: 24px;">
                 {if $order->locked == 1}
                     <span class="glyphicon glyphicon-lock"></span>
@@ -13,6 +13,11 @@
             </span>
             <br>
             Owner: {$order->ownerUser|capitalize}<br>
+        </div>        
+        <div class="col-md-6">
+            {if $order->locked == 0}
+                <a href="/orders/{$order->uuid}/menu" class="btn btn-primary">Artikel hinzufügen</a>
+            {/if}
         </div>
     </div>
     <div class="row">
@@ -113,7 +118,7 @@
                 </div>
             </div>
             <br>
-            <form action="/order/close" method="post">
+            <form action="/orders/close" method="post">
                 <div class="row">
                     <div class="col-md-12">
                         <p>Bitte Helfer auswählen:</p>
