@@ -639,19 +639,18 @@ function getPointsFromDelivery($dn) {
     return $points;
 }
 
-function getHighscoreArray() {
-    global $mysqli;
+function getHighscoreArray($capsule) {
     $userArray = array();
     $sortArray = array();
     $highscore = array();
-    $select = 'SELECT id FROM login WHERE active = TRUE';
-    $query = $mysqli->query($select);
-    while($row = $query->fetch_object()) {
-        $userArray[] = $row->id;
-    }
+
+    $userArray = $capsule->table('users')
+        ->where('active', true)
+        ->get()
+        ->toArray();
 
     foreach($userArray as $user) {
-        $sortArray[$user] = calcHelperPoints($user) + calcOwnerPoints($user);
+        $sortArray[$user] = calcHelperPoints($user->uuid) + calcOwnerPoints($user->uuid);
     }
 
     arsort($sortArray);

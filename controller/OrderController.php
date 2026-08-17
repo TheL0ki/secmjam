@@ -182,13 +182,19 @@ class OrderController
         $orderItems = $this->capsule->table('order_items')
             ->where('order_uuid', $order_uuid)
             ->leftJoin('menu', 'order_items.item_id', '=', 'menu.id')
-            ->select('order_items.*', 'menu.sub_category as sub_category', 'menu.item as item', 'menu.size as size', 'menu.price as price')
+            ->leftJoin('users', 'order_items.item_owner_uuid', '=', 'users.uuid')
+            ->select('order_items.*', 'menu.sub_category as sub_category', 'menu.item as item', 'menu.size as size', 'menu.price as price', 'users.*')
             ->get();
         $extras = $this->capsule->table('order_item_extras')
             ->whereIn('order_item_id', $orderItems->pluck('id'))
             ->leftJoin('extras', 'order_item_extras.extra_id', '=', 'extras.id')
             ->select('order_item_extras.*', 'extras.name as extraName')
             ->get();
+               
+        $orderExtras = [];
+        foreach ($extras as $orderExtra) {
+            $orderExtras[$orderExtra->order_item_id] = $orderExtra->extraName;
+        }
 
         $total = $this->total($order_uuid);
         $totalSum = array_sum(array_column($total, 'total'));
@@ -196,7 +202,7 @@ class OrderController
         $this->smarty->assign([
             'order' => $order,
             'orderItems' => $orderItems,
-            'extras' => $extras,
+            'orderExtras' => $orderExtras,
             'totalItems' => $this->totalItems($order_uuid),
             'total' => $total,
             'totalSum' => $totalSum,
@@ -209,12 +215,26 @@ class OrderController
     public function lockOrder(string $order_uuid)
     {
         try {
-            v::key('order_uuid', v::uuid())
-                ->assert($_POST);
+            v::uuid()->assert($order_uuid);
         } catch (ValidationException $e) {
             echo 'Error: ' . $e->getMessage();
             die;
         }
+        $order = $this->capsule->table('orders')->where('uuid', $order_uuid)->first();
+        if (!$order) {
+            http_response_code(404);
+            $this->smarty->display('error/404.tpl');
+            return;
+        }
+        if ($order->locked == 1) {
+            echo 'Error: Order already locked';
+            die;
+        }
+        if ($order->owner_uuid != $_SESSION['user']->uuid) {
+            echo 'Error: You are not the owner of this order';
+            die;
+        }
+
         $this->capsule->table('orders')->where('uuid', $order_uuid)->update(['locked' => 1]);
         header('Location: /orders');
     }
@@ -222,12 +242,26 @@ class OrderController
     public function unlockOrder(string $order_uuid)
     {
         try {
-            v::key('order_uuid', v::uuid())
-                ->assert($_POST);
+            v::uuid()->assert($order_uuid);
         } catch (ValidationException $e) {
             echo 'Error: ' . $e->getMessage();
             die;
         }
+        $order = $this->capsule->table('orders')->where('uuid', $order_uuid)->first();
+        if (!$order) {
+            http_response_code(404);
+            $this->smarty->display('error/404.tpl');
+            return;
+        }
+        if ($order->locked == 0) {
+            echo 'Error: Order already unlocked';
+            die;
+        }
+        if ($order->owner_uuid != $_SESSION['user']->uuid) {
+            echo 'Error: You are not the owner of this order';
+            die;
+        }
+
         $this->capsule->table('orders')->where('uuid', $order_uuid)->update(['locked' => 0]);
         header('Location: /orders');
     }
@@ -242,6 +276,21 @@ class OrderController
             echo 'Error: ' . $e->getMessage();
             die;
         }
+        $order = $this->capsule->table('orders')->where('uuid', $_POST['order_uuid'])->first();
+        if (!$order) {
+            http_response_code(404);
+            $this->smarty->display('error/404.tpl');
+            return;
+        }
+        if ($order->open == 0) {
+            echo 'Error: Order already closed';
+            die;
+        }
+        if ($order->owner_uuid != $_SESSION['user']->uuid) {
+            echo 'Error: You are not the owner of this order';
+            die;
+        }
+
         $this->capsule->table('orders')->where('uuid', $_POST['order_uuid'])->update(['open' => 0, 'locked' => 1]);
         foreach ($_POST['helper'] as $helper) {
             $this->capsule->table('helper')->insert([

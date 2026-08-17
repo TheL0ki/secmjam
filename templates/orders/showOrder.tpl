@@ -38,13 +38,13 @@
                     <tbody>
                         {foreach item=orderItem from=$orderItems}
                             <tr>
-                                <td>{$order->ownerUser|capitalize}</td>
+                                <td>{$orderItem->user|capitalize}</td>
                                 <td>{$orderItem->sub_category} {$orderItem->item}</td>
                                 <td>{$orderItem->amount}</td>
                                 <td>{$orderItem->size}</td>
                                 <td>
-                                    {foreach item=extra from=$extras}
-                                        {$extra->extraName}
+                                    {foreach item=extra from=$orderExtras[$orderItem->id]}
+                                        {$extra}
                                     {/foreach}
                                 </td>
                                 <td>€ {$orderItem->price|number_format:2:",":"."}</td>
@@ -111,9 +111,9 @@
             <div class="row">
                 <div class="col-xs-12">
                     {if $order->locked == 1}
-                        <a href="/order/unlock/{$order->uuid}" class="btn btn-primary">Bestellung entsperren</a>
+                        <a href="/orders/unlock/{$order->uuid}" class="btn btn-primary">Bestellung entsperren</a>
                     {else}
-                        <a href="/order/lock/{$order->uuid}" class="btn btn-primary">Bestellung sperren</a>
+                        <a href="/orders/lock/{$order->uuid}" class="btn btn-primary">Bestellung sperren</a>
                     {/if}
                 </div>
             </div>

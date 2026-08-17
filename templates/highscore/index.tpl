@@ -48,22 +48,20 @@
                     <tbody>
                         {assign var=i value=1}
                         {foreach item=user from=$highscore}
-                            {if $user.orders != '0'}
-                                <tr class="{if $i == '1'}
-                                        first
-                                    {elseif $i == '2'}
-                                        second
-                                    {elseif $i == '3'}
-                                        third
-                                    {/if}">
-                                    <td>#{$i}</td>
-                                    <td>{$user.data.firstname} {$user.data.lastname}</td>
-                                    <td>{$user.points}</td>
-                                    <td>{$user.orders}</td>
-                                    <td>{$user.quote}%</td>
-                                </tr>
-                                {assign var=i value=$i+1}
-                            {/if}
+                            <tr class="{if $i == '1'}
+                                    first
+                                {elseif $i == '2'}
+                                    second
+                                {elseif $i == '3'}
+                                    third
+                                {/if}">
+                                <td>#{$i}</td>
+                                <td>{$user.user->firstname} {$user.user->lastname}</td>
+                                <td>{$user.total_points}</td>
+                                <td>{$user.totalOrders}</td>
+                                <td>{$user.quote}</td>
+                            </tr>
+                            {assign var=i value=$i+1}
                         {/foreach}
                     </tbody>
                 </table>

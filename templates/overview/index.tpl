@@ -14,7 +14,7 @@
             {/foreach}
         </div>
         <div class="col-md-6">
-            <p>Meine letzten 10 Bestellungen als Owner:</p>
+            <p>Meine letzten 10 gestarteten Bestellungen:</p>
             {foreach $last_orders_owner as $order}
                 <a href='/orders/show/{$order->uuid}'>{$order->created_at} - {$order->categoryName|capitalize}</a><br>
             {/foreach}
