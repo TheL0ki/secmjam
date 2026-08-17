@@ -54,10 +54,9 @@ class StatsController
 
     public function topCategories()
     {
-        $countArr = $this->capsule->table('order_items')
-            ->leftJoin('menu', 'order_items.item_id', '=', 'menu.id')
-            ->leftJoin('categories', 'menu.category_id', '=', 'categories.id')
-            ->selectRaw('SUM(order_items.amount) as item_count')
+        $countArr = $this->capsule->table('orders')
+            ->leftJoin('categories', 'orders.category_id', '=', 'categories.id')
+            ->selectRaw('COUNT(DISTINCT(orders.uuid)) as item_count')
             ->selectRaw('categories.name as name')
             ->groupBy('categories.name')
             ->orderBy('item_count', 'desc')
@@ -71,14 +70,16 @@ class StatsController
     {
         $countArr = $this->capsule->table('order_items')
             ->where('order_items.item_owner_uuid', $_SESSION['user']->uuid)
-            ->leftJoin('menu', 'order_items.item_id', '=', 'menu.id')
-            ->leftJoin('categories', 'menu.category_id', '=', 'categories.id')
-            ->selectRaw('SUM(order_items.amount) as item_count')
+            ->leftJoin('orders', 'order_items.order_uuid', '=', 'orders.uuid')
+            ->leftJoin('categories', 'orders.category_id', '=', 'categories.id')
+            ->selectRaw('DISTINCT(orders.uuid) as order_uuid')
+            ->selectRaw('COUNT(DISTINCT(orders.uuid)) as item_count')
             ->selectRaw('categories.name as name')
             ->groupBy('categories.name')
             ->orderBy('item_count', 'desc')
             ->limit(5)
             ->get();
+        
         return $countArr;
     }
 }

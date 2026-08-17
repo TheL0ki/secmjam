@@ -9,7 +9,7 @@ class OverviewController
         private mixed $capsule
     ) {}
 
-    public function index()
+    public function index() : void
     {
         $last_orders = $this->capsule->table('order_items')
             ->where('item_owner_uuid', $_SESSION['user']->uuid)            
