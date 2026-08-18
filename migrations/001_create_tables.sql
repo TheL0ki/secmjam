@@ -85,6 +85,7 @@ CREATE TABLE IF NOT EXISTS `order_items` (
     `item_id` INT UNSIGNED NOT NULL,
     `item_owner_uuid` UUID NOT NULL,
     `amount` INT(16) NOT NULL,
+    `active` TINYINT(1) NOT NULL DEFAULT 1,
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),

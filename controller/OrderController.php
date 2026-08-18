@@ -180,7 +180,8 @@ class OrderController
             ->select('orders.*', 'users.user as ownerUser')
             ->first();
         $orderItems = $this->capsule->table('order_items')
-            ->where('order_uuid', $order_uuid)
+            ->where('order_items.order_uuid', $order_uuid)
+            ->where('order_items.active', 1)
             ->leftJoin('menu', 'order_items.item_id', '=', 'menu.id')
             ->leftJoin('users', 'order_items.item_owner_uuid', '=', 'users.uuid')
             ->select('order_items.*', 'menu.sub_category as sub_category', 'menu.item as item', 'menu.size as size', 'menu.price as price', 'users.*')
@@ -199,6 +200,11 @@ class OrderController
         $total = $this->total($order_uuid);
         $totalSum = array_sum(array_column($total, 'total'));
 
+        $catPoints = $this->capsule->table('categories')
+            ->where('id', $order->category_id)
+            ->pluck('points')
+            ->first();
+
         $this->smarty->assign([
             'order' => $order,
             'orderItems' => $orderItems,
@@ -207,8 +213,10 @@ class OrderController
             'total' => $total,
             'totalSum' => $totalSum,
             'helperArray' => $this->getHelper($order_uuid),
-            'sessionUser' => $_SESSION['user']->uuid
+            'sessionUser' => $_SESSION['user']->uuid,
+            'points' => ($orderItems->sum('amount') * $catPoints) ?? 0
         ]);
+
         $this->smarty->display('orders/showOrder.tpl');
     }
 
@@ -353,6 +361,52 @@ class OrderController
             ->select('users.uuid as uuid', 'users.user as user')
             ->get();
         return $helpers->toArray();
+    }
+
+    public function cancelOrderItem()
+    {
+        try {
+            v::intVal()->greaterThanOrEqual(1)->assert($_POST['order_item_id']);
+        } catch (ValidationException $e) {
+            echo 'Error: ' . $e->getMessage();
+            die;
+        }
+
+        $orderItem = $this->capsule->table('order_items')
+            ->where('id', $_POST['order_item_id'])
+            ->leftJoin('orders', 'order_items.order_uuid', '=', 'orders.uuid')
+            ->select('order_items.*', 'orders.owner_uuid as order_owner_uuid', 'orders.open as order_open', 'orders.locked as order_locked')
+            ->first();
+
+        if (!$orderItem) {
+            http_response_code(404);
+            $this->smarty->display('error/404.tpl');
+            return;
+        }
+
+        if ($orderItem->item_owner_uuid != $_SESSION['user']->uuid) {
+            echo 'Error: You are not the owner of this item';
+            die;
+        }
+        
+        if ($orderItem->active == 0) {
+            echo 'Error: Item already cancelled';
+            die;
+        }
+
+        if ($orderItem->order_open == 0 || $orderItem->order_locked == 1) {
+            echo 'Error: Order is already closed or locked';
+            die;
+        }
+
+        $this->capsule->table('order_items')
+            ->where('id', $_POST['order_item_id'])
+            ->update([
+                'active' => 0,
+                'updated_at' => date('Y-m-d H:i:s')
+        ]);
+        header('Location: /orders/show/' . $orderItem->order_uuid);
+        exit;
     }
 
     private function sendInfoMail(object $owner, string $category, bool $hasAutolock = false, string $time = '00:00'): void

@@ -3,6 +3,12 @@
 {block name=title}SEC-Mjam - Bestellung{/block}
 
 {block name=content}
+    <style>
+        .table > tbody > tr > td {
+        vertical-align: middle;
+        }
+    </style>
+
     <div class="row" style="margin-bottom: 20px;">
         <div class="col-md-6">
             <span style="font-size: 24px;">
@@ -48,7 +54,18 @@
                                     {/foreach}
                                 </td>
                                 <td>€ {$orderItem->price|number_format:2:",":"."}</td>
-                                <td>Löschen</td>
+                                <td>
+                                    {if $order->open == 1
+                                        && $order->locked == 0 
+                                        && $orderItem->item_owner_uuid == $sessionUser 
+                                        && $order->owner_uuid != $sessionUser
+                                    }
+                                        <form action="/orders/cancel-item" method="post">
+                                            <input type="hidden" name="order_item_id" value="{$orderItem->id}">
+                                            <input type="submit" class="btn btn-danger" value="Stornieren">
+                                        </form>
+                                    {/if}
+                                </td>
                             </tr>
                         {/foreach}
                     </tbody>

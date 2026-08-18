@@ -29,5 +29,6 @@ return [
         '/orders/new' => [OrderController::class, 'createOrder'],
         '/orders' => [OrderController::class, 'addItems'],
         '/orders/close' => [OrderController::class, 'closeOrder'],
+        '/orders/cancel-item' => [OrderController::class, 'cancelOrderItem'],
     ],
 ];
