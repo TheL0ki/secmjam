@@ -3,6 +3,11 @@
 {block name=title}SEC-Mjam - Menü{/block}
 
 {block name="content"}
+    <style>
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+    </style>
     <div class="row">
         <div class="col-xs-12" style="margin-top: 20px;">
             <form action="/orders" method="post">

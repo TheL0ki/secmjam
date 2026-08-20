@@ -201,11 +201,11 @@ class OrderController
             ->leftJoin('extras', 'order_item_extras.extra_id', '=', 'extras.id')
             ->select('order_item_extras.*', 'extras.name as extraName')
             ->get();
-               
+        
         $orderExtras = [];
         foreach ($extras as $orderExtra) {
-            $orderExtras[$orderExtra->order_item_id] = $orderExtra->extraName;
-        }
+            $orderExtras[$orderExtra->order_item_id][] = $orderExtra->extraName;
+        }        
 
         $total = $this->total($order_uuid);
         $totalSum = array_sum(array_column($total, 'total'));
@@ -333,7 +333,12 @@ class OrderController
         
         $totalItems = [];
         foreach ($orderItems as $orderItem) {
-            $totalItems[$orderItem->item_id]['item'] = $orderItem->sub_category . ' ' . $orderItem->item . ' (' . $orderItem->size . ')';
+            if($orderItem->size === '') {
+                $size = '';
+            } else {
+                $size = ' (' . $orderItem->size . ')';
+            }
+            $totalItems[$orderItem->item_id]['item'] = $orderItem->sub_category . ' ' . $orderItem->item . $size;
             $amount = $this->capsule->table('order_items')
                 ->where('item_id', $orderItem->item_id)
                 ->where('order_uuid', $order_uuid)

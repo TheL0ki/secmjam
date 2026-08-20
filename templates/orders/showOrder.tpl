@@ -50,7 +50,7 @@
                                 <td>{$orderItem->size}</td>
                                 <td>
                                     {foreach item=extra from=$orderExtras[$orderItem->id]}
-                                        {$extra}
+                                        {$extra|capitalize}
                                     {/foreach}
                                 </td>
                                 <td>€ {$orderItem->price|number_format:2:",":"."}</td>

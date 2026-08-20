@@ -17,6 +17,7 @@ class MainController
 
     public function getPoints()
     {
+        $totalPoints = 0;
         $orderPoints = $this->capsule->table('orders')
             ->join('categories', 'orders.category_id', '=', 'categories.id')
             ->leftJoin('order_items', 'orders.uuid', '=', 'order_items.order_uuid')
@@ -32,7 +33,18 @@ class MainController
             ->where('user_uuid', $_SESSION['user']->uuid)
             ->selectRaw('ROUND(COALESCE(SUM(categories.points * order_items.amount), 0) / 2, 0) as helper_points')
             ->first();
-        
-        return $orderPoints->order_points + $helperPoints->helper_points;
+
+        if($orderPoints == null) {
+            $totalPoints += 0;
+        } else {
+            $totalPoints += $orderPoints->order_points;
+        }
+        if($helperPoints == null) {
+            $totalPoints += 0;
+        } else {
+            $totalPoints += $helperPoints->helper_points;
+        }
+
+        return $totalPoints;
     }
 }
