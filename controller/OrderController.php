@@ -5,6 +5,8 @@ namespace App\Controllers;
 use Ramsey\Uuid\Uuid;
 use Respect\Validation\ValidatorBuilder as v;
 use Respect\Validation\Exceptions\ValidationException;
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception as PHPMailerException;
 
 class OrderController
 {
@@ -38,6 +40,12 @@ class OrderController
 
     public function chooseCategory()
     {
+        $orderCheck = $this->capsule->table('orders')->where('owner_uuid', $_SESSION['user']->uuid)->where('open', 1)->first();
+        if ($orderCheck) {
+            header('Location: /orders/show/' . $orderCheck->uuid);
+            exit;
+        }
+
         $categories = $this->capsule->table('categories')->get();
         $this->smarty->assign('categories', $categories);
         $this->smarty->display('orders/chooseCategory.tpl');
@@ -53,6 +61,7 @@ class OrderController
         } catch (ValidationException $e) {
             echo 'Error: ' . $e->getMessage();
             die;
+            
         }
 
         $autolock = null;
@@ -82,12 +91,13 @@ class OrderController
 
         if (!empty($_POST['infomail'])) {
             $category = $this->capsule->table('categories')->where('id', $category_id)->first();
-            /* $this->sendInfoMail(
+            $this->sendInfoMail(
                 $_SESSION['user'],
                 $category->name ?? '',
                 $autolock !== null,
-                $autolock ? date('d.m.Y H:i', strtotime($autolock)) : '00:00'
-            ); */
+                $autolock ? date('d.m.Y H:i', strtotime($autolock)) : '00:00',
+                $order_uuid
+            );
         }
 
         header('Location: /orders/' . $order_uuid . '/menu');
@@ -300,11 +310,15 @@ class OrderController
         }
 
         $this->capsule->table('orders')->where('uuid', $_POST['order_uuid'])->update(['open' => 0, 'locked' => 1]);
-        foreach ($_POST['helper'] as $helper) {
-            $this->capsule->table('helper')->insert([
-                'user_uuid' => $helper,
-                'order_uuid' => $_POST['order_uuid'],
-            ]);
+        if (!empty($_POST['helper'])) {
+            foreach ($_POST['helper'] as $helper) {
+                $this->capsule->table('helper')->insert([
+                    'user_uuid' => $helper,
+                    'order_uuid' => $_POST['order_uuid'],
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'updated_at' => date('Y-m-d H:i:s'),
+                ]);
+            }
         }
         header('Location: /orders/show/' . $_POST['order_uuid']);
     }
@@ -409,7 +423,7 @@ class OrderController
         exit;
     }
 
-    private function sendInfoMail(object $owner, string $category, bool $hasAutolock = false, string $time = '00:00'): void
+    private function sendInfoMail(object $owner, string $category, bool $hasAutolock = false, string $time = '00:00', string $order_uuid = '') : void
     {
         $receivers = $this->capsule->table('users')
             ->where('notify', 1)
@@ -426,17 +440,41 @@ class OrderController
         $text = str_replace('[time]', $time, $text);
         $text = str_replace('[name]', $ownerFullName, $text);
         $text = str_replace('[mail_food]', ucfirst($category), $text);
+        $text = str_replace('[address]', $_ENV['APP_ADDRESS'] . '/orders/show/' . $order_uuid ?? '', $text);
 
-        $headers = [
-            'MIME-Version: 1.0',
-            'Content-Type: text/html; charset=UTF-8',
-            'From: SEC-Mjam <no-reply@loki-net.at>',
-            'Reply-To: SEC-Mjam <no-reply@loki-net.at>',
-            'X-Mailer: PHP/' . phpversion(),
-        ];
+        $mail = new PHPMailer(true);
+        try {
+            $mail->isSMTP();
+            $mail->Host = $_ENV['EMAIL_SMTP'];
+            $mail->Port = (int) $_ENV['EMAIL_PORT'];
+            $mail->CharSet = PHPMailer::CHARSET_UTF8;
 
-        foreach ($receivers as $receiver) {
-            mail($receiver, 'Neue SEC-Mjam Bestellung', $text, implode("\r\n", $headers));
+            $username = $_ENV['EMAIL_USER'] ?? '';
+            $password = $_ENV['EMAIL_PASSWORD'] ?? '';
+            if ($username !== '' && $password !== '') {
+                $mail->SMTPAuth = true;
+                $mail->Username = $username;
+                $mail->Password = $password;
+                $mail->SMTPSecure = $mail->Port === 465
+                    ? PHPMailer::ENCRYPTION_SMTPS
+                    : PHPMailer::ENCRYPTION_STARTTLS;
+            } else {
+                $mail->SMTPAuth = false;
+                $mail->SMTPAutoTLS = false;
+            }
+
+            $mail->setFrom($_ENV['EMAIL_FROM'], $_ENV['EMAIL_FROM_NAME'] ?? '');
+            $mail->isHTML(true);
+            $mail->Subject = 'Neue SEC-Mjam Bestellung';
+            $mail->Body = $text;
+
+            foreach ($receivers as $receiver) {
+                $mail->clearAddresses();
+                $mail->addAddress($receiver);
+                $mail->send();
+            }
+        } catch (PHPMailerException $e) {
+            error_log('Info mail failed: ' . $mail->ErrorInfo);
         }
     }
 }

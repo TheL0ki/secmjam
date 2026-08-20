@@ -6,7 +6,8 @@
         "illuminate/database": "^13.24",
         "respect/validation": "3.1.2",
         "php-di/php-di": "^7.1",
-        "ramsey/uuid": "^4.9"
+        "ramsey/uuid": "^4.9",
+        "altcha-org/altcha": "^2.1"
     },
     "require-dev": {
         "symfony/var-dumper": "^8.1",

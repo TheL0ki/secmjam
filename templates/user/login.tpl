@@ -10,9 +10,9 @@
             <div class="col-md-6">
                 <form action="/login" method="post" class="form-horizontal">
                     <div class="form-group">
-                        <label for="user" class="col-sm-2 control-label">User:</label>
+                        <label for="username" class="col-sm-2 control-label">User:</label>
                         <div class="col-sm-8">
-                            <input type="text" name="user" id="user" class="form-control" placeholder="User">
+                            <input type="text" name="username" id="username" class="form-control" placeholder="User">
                         </div>
                     </div>
                     <div class="form-group">
@@ -32,10 +32,10 @@
                         <div class="col-sm-8">
                             <div class="row">
                                 <div class="col-xs-6">
-                                    <a href="register.php" class="btn btn-default btn-block">Registrieren</a>
+                                    <a href="/register" class="btn btn-default btn-block">Registrieren</a>
                                 </div>
                                 <div class="col-xs-6">
-                                    <a href="pwd_forget.php" class="btn btn-default btn-block">Passwort vergessen</a>
+                                    <a href="/forgot-password" class="btn btn-default btn-block">Passwort vergessen</a>
                                 </div>
                             </div>
                         </div>

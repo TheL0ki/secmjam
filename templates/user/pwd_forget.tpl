@@ -5,20 +5,27 @@
 {block name=content}
     <div class="row">
         <div class="col-md-7">
-            <form class="form-horizontal" method="post" action="pwd_forget.php?page=send">
-                <div class="form-group">
-                    <label for="email" class="col-sm-3 control-label">E-Mail Adresse:</label>
-                    <div class="col-sm-7">
-                        <input class="form-control" type="text" name="email" id="email" placeholder="E-Mail">
-                    </div>
+            {if $sent}
+                <div class="alert alert-success" role="alert">
+                    Falls ein Konto mit dieser E-Mail-Adresse existiert, wurde ein Link zum Zurücksetzen des Passworts versendet.
                 </div>
-                <div class="form-group">
-                    <label for="submit" class="col-sm-3 control-label"></label>
-                    <div class="col-sm-7">
-                        <td><input class="form-control btn btn-primary" type="submit" value="Senden">
+                <a href="/login" class="btn btn-primary">Zum Login</a>
+            {else}
+                <form class="form-horizontal" method="post" action="/forgot-password">
+                    <div class="form-group">
+                        <label for="email" class="col-sm-3 control-label">E-Mail Adresse:</label>
+                        <div class="col-sm-7">
+                            <input class="form-control" type="email" name="email" id="email" placeholder="E-Mail" required>
+                        </div>
                     </div>
-                </div>
-            </form>
+                    <div class="form-group">
+                        <label for="submit" class="col-sm-3 control-label"></label>
+                        <div class="col-sm-7">
+                            <input class="form-control btn btn-primary" type="submit" value="Senden">
+                        </div>
+                    </div>
+                </form>
+            {/if}
         </div>
     </div>
 {/block}

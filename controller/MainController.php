@@ -10,17 +10,29 @@ class MainController
     ) {}
 
     public function index()
-    {        
+    {   
+        $this->smarty->assign('points', $this->getPoints());
         $this->smarty->display('main.tpl');
     }
 
-    public function showHighscore()
+    public function getPoints()
     {
-        $this->smarty->display('highscore.tpl');
-    }
+        $orderPoints = $this->capsule->table('orders')
+            ->join('categories', 'orders.category_id', '=', 'categories.id')
+            ->leftJoin('order_items', 'orders.uuid', '=', 'order_items.order_uuid')
+            ->where('owner_uuid', $_SESSION['user']->uuid)
+            ->selectRaw('COALESCE(SUM(categories.points * order_items.amount), 0) as order_points')
+            ->groupBy('orders.owner_uuid')
+            ->first();
 
-    public function showStatistics()
-    {
-        $this->smarty->display('stats.tpl');
+        $helperPoints = $this->capsule->table('helper')
+            ->join('orders', 'helper.order_uuid', '=', 'orders.uuid')
+            ->join('categories', 'orders.category_id', '=', 'categories.id')
+            ->leftJoin('order_items', 'orders.uuid', '=', 'order_items.order_uuid')
+            ->where('user_uuid', $_SESSION['user']->uuid)
+            ->selectRaw('ROUND(COALESCE(SUM(categories.points * order_items.amount), 0) / 2, 0) as helper_points')
+            ->first();
+        
+        return $orderPoints->order_points + $helperPoints->helper_points;
     }
 }

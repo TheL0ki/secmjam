@@ -10,11 +10,17 @@ $routes = require 'routes/web.php';
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
 $publicRoutes = [
-    'GET'  => ['/login'],
-    'POST' => ['/login'],
+    'GET'  => ['/login', '/register', '/forgot-password', '/altcha', '/reset-password'],
+    'POST' => ['/login', '/register', '/forgot-password', '/reset-password'],
 ];
 
-$isPublic = in_array($path, $publicRoutes[$method] ?? [], true);
+$isPublic = false;
+foreach ($publicRoutes[$method] ?? [] as $publicPath) {
+    if ($path === $publicPath || str_starts_with($path, $publicPath . '/')) {
+        $isPublic = true;
+        break;
+    }
+}
 
 if (!$isPublic && !isset($_SESSION['user'])) {
     header('Location: /login');
