@@ -3,16 +3,11 @@
 {block name=title}SEC-Mjam - Menü{/block}
 
 {block name="content"}
-    <style>
-        .table > tbody > tr > td {
-            vertical-align: middle;
-        }
-    </style>
-    <div class="row">
-        <div class="col-xs-12" style="margin-top: 20px;">
+    <div class="row mt-3">
+        <div class="col">
             <form action="/orders" method="post">
-                <div class="table-responsive">
-                    <table class="table table-striped">
+                <div class="table-responsive-md">
+                    <table class="table table-striped table-bordered align-middle">
                         <thead>
                             <tr>
                                 <th>Sub Cat</th>
@@ -32,7 +27,7 @@
                                     <td>{$item->size}</td>
                                     <td>
                                         {if $item->multiple_extras == 0}
-                                            <select size="1" name="item[{$item->id}][extras][]">
+                                            <select class="form-select" size="1" name="item[{$item->id}][extras][]">
                                                 <option value="false"></option>
                                                 {foreach $extras as $extra}
                                                     <option value="{$extra->id}">{$extra->name}</option>
@@ -40,13 +35,17 @@
                                             </select>
                                         {else}
                                             {foreach $extras as $extra}
-                                                <input type="checkbox" name="item[{$item->id}][extras][]" value="{$extra->id}">{$extra->name}<br>
+                                                <input class="form-check-input" type="checkbox" name="item[{$item->id}][extras][]" value="{$extra->id}">{$extra->name}
                                             {/foreach}
                                         {/if}
                                     </td>
                                     <td>€ {$item->price|number_format:2:',':'.'}</td>
-                                    <td><input type="number" name="item[{$item->id}][amount]" min="1" max="5" value="1"></td>
-                                    <td><input type="checkbox" value="{$item->id}" name="item[{$item->id}][checked]"></td>
+                                    <td><input class="form-control" type="number" name="item[{$item->id}][amount]" min="1" max="5" value="1"></td>
+                                    <td>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" value="{$item->id}" name="item[{$item->id}][checked]">
+                                        </div>
+                                    </td>
                                 </tr>
                             {/foreach}
                         </tbody>

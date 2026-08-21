@@ -1,6 +1,6 @@
 {extends 'layout.tpl'}
 
-{block name=title}SEC-Mjam - Stats{/block}
+{block name=title}Stats - SEC-Mjam{/block}
 
 {block name=content}
     <div class="row">

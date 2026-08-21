@@ -3,33 +3,27 @@
 {block name=title}SEC-Mjam - Bestellung{/block}
 
 {block name=content}
-    <style>
-        .table > tbody > tr > td {
-        vertical-align: middle;
-        }
-    </style>
-
-    <div class="row" style="margin-bottom: 20px;">
-        <div class="col-md-6">
-            <span style="font-size: 24px;">
+    <div class="row mt-3">
+        <div class="col">
+            <span class="fs-4">
                 {if $order->locked == 1}
-                    <span class="glyphicon glyphicon-lock"></span>
+                    <span class="bi bi-lock-fill"></span>
                 {/if}
                 Bestellungen vom {$order->created_at|date_format:"%d.%m.%Y %H:%M"}
             </span>
             <br>
             Owner: {$order->ownerUser|capitalize}<br>
         </div>        
-        <div class="col-md-6">
+        <div class="col">
             {if $order->locked == 0}
                 <a href="/orders/{$order->uuid}/menu" class="btn btn-primary">Artikel hinzufügen</a>
             {/if}
         </div>
     </div>
-    <div class="row">
-        <div class="col-md-12">
-            <div class="table-responsive">
-                <table id="item" class="table table-striped table-bordered">
+    <div class="row mt-3">
+        <div class="col">
+            <div class="table-responsive-md">
+                <table class="table table-striped table-bordered align-middle">
                     <thead>
                         <tr>
                             <th>Owner</th>
@@ -73,23 +67,22 @@
             </div>
         </div>
     </div>
-    <div class="row">
-        <div class="col-md-6" style="margin-top: 15px;">
-            <div style="border: 3px solid darkred; border-radius: 15px; padding-left: 15px; padding-right: 15px;">
-                <div class="row">
-                    <div class="col-xs-12" style="text-align: center;">
-                        <span style="font-size: 18px;">Zusammenfassung</span>
-                    </div>
+    <div class="row mt-3">
+        <div class="col">
+            <div class="card">
+                <div class="card-header">
+                    <span>Zusammenfassung</span>
                 </div>
-                {assign var=totalItemsCount value=0}
-                {foreach item=item from=$totalItems}
-                    <div class="row">
-                        <div class="col-xs-12">
-                            {$item.amount}x {$item.item}
-                            {assign var=totalItemsCount value=$totalItemsCount+$item.amount}
+                <div class="card-body">
+                    {assign var=totalItemsCount value=0}
+                    {foreach item=item from=$totalItems}
+                        <div class="row">
+                            <div class="col-xs-12">
+                                {$item.amount}x {$item.item}
+                                {assign var=totalItemsCount value=$totalItemsCount+$item.amount}
+                            </div>
                         </div>
-                    </div>
-                {/foreach}
+                    {/foreach}
                     <div class="row" style="border-top: 3px double black">
                         <div class="col-sm-6">
                             Summe aller Bestellungen: {$totalItemsCount}
@@ -98,10 +91,11 @@
                             Punktewert: {$points}
                         </div>
                     </div>
+                </div>
             </div>
         </div>
-        <div class="col-md-6" style="margin-top: 15px;">
-            <table class="table table-striped">
+        <div class="col">
+            <table class="table table-striped table-bordered align-middle">
                 {foreach key=key item=row from=$total}
                     <tr>
                         <td>
@@ -114,10 +108,10 @@
                 {/foreach}
                 <tr style="border-top: 3px double black;">
                     <td>
-                        Summe:
+                        <strong>Summe:</strong>
                     </td>
                     <td>
-                        € {$totalSum|number_format:2:",":"."}
+                        <strong>€ {$totalSum|number_format:2:",":"."}</strong>
                     </td>
                 </tr>
             </table>

@@ -1,6 +1,6 @@
 {extends 'layout.tpl'}
 
-{block name=title}SEC-Mjam - Highscore{/block}
+{block name=title}Highscore - SEC-Mjam{/block}
 
 {block name=content}
     <style>
