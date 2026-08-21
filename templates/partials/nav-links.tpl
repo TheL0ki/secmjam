@@ -1,7 +1,21 @@
-<li {if $current_site == '/'}class="active"{/if}><a href="/">Home</a></li>
-<li {if $current_site|str_starts_with:'/orders'}class="active"{/if}><a href="/orders">Bestellungen{if $countUnlockedOrders > 0} <span class="badge">{$countUnlockedOrders}</span>{/if}</a></li>
-<li {if $current_site|str_starts_with:'/overview'}class="active"{/if}><a href="/overview">Übersicht</a></li>
-<li {if $current_site|str_starts_with:'/user'}class="active"{/if}><a href="/user/settings">Einstellungen</a></li>
-<li {if $current_site|str_starts_with:'/highscore'}class="active"{/if}><a href="/highscore">Highscore</a></li>
-<li {if $current_site|str_starts_with:'/stats'}class="active"{/if}><a href="/stats">Statistik</a></li>
-<li class="nav navbar-right"><a href="/logout">Logout</a></li>
+<li class="nav-item">
+    <a class="nav-link {if $current_site == '/' || $current_site == '/login'}active{/if}" href="/">Home</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link {if $current_site|str_starts_with:'/orders'}active{/if}" href="/orders">Bestellungen{if $countUnlockedOrders > 0} <span class="badge">{$countUnlockedOrders}</span>{/if}</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link {if $current_site|str_starts_with:'/overview'}active{/if}" href="/overview">Übersicht</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link {if $current_site|str_starts_with:'/user'}active{/if}" href="/user/settings">Einstellungen</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link {if $current_site|str_starts_with:'/highscore'}active{/if}" href="/highscore">Highscore</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link {if $current_site|str_starts_with:'/stats'}active{/if}" href="/stats">Statistik</a>
+</li>
+<li class="nav-item ms-auto">
+    <a class="nav-link" href="/logout">Logout</a>
+</li>

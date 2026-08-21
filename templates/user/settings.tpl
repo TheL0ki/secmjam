@@ -1,6 +1,6 @@
 {extends 'layout.tpl'}
 
-{block name=title}SEC-Mjam - Einstellungen{/block}
+{block name=title}Einstellungen - SEC-Mjam{/block}
 
 {block name=content}
     {nocache}

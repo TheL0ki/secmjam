@@ -1,7 +1,7 @@
 {extends file='layout.tpl'}
 
 {block name='title'}
-    SEC-Mjam - Übersicht
+    Übersicht - SEC-Mjam
 {/block}
 
 {block name='content'}

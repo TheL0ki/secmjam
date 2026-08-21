@@ -1,3 +1,3 @@
-<footer class="footer">
+<footer class="fixed-bottom bg-light-subtle text-center">
     <p class="text-muted">© 2015-2026 <a href="mailto: dev@dominikus.one">Alexander Dominikus</a></p>
 </footer>
