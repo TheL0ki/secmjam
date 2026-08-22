@@ -68,7 +68,7 @@
         </div>
     </div>
     <div class="row mt-3">
-        <div class="col">
+        <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
                     <span>Zusammenfassung</span>
@@ -94,7 +94,7 @@
                 </div>
             </div>
         </div>
-        <div class="col">
+        <div class="col-md-6">
             <table class="table table-striped table-bordered align-middle">
                 {foreach key=key item=row from=$total}
                     <tr>
@@ -118,39 +118,36 @@
         </div>
     </div>
     {if $order->owner_uuid == $sessionUser}
-        {if $order->open == 1}
-            <div class="row">
-                <div class="col-xs-12">
-                    {if $order->locked == 1}
-                        <a href="/orders/unlock/{$order->uuid}" class="btn btn-primary">Bestellung entsperren</a>
-                    {else}
-                        <a href="/orders/lock/{$order->uuid}" class="btn btn-primary">Bestellung sperren</a>
-                    {/if}
-                </div>
+        <div class="row mt-3">
+            <div>
+                {if $order->locked == 1 && $order->open == 1}
+                    <a href="/orders/unlock/{$order->uuid}" class="btn btn-primary">Bestellung entsperren</a>
+                {else}
+                    <a href="/orders/lock/{$order->uuid}" class="btn btn-primary">Bestellung sperren</a>
+                {/if}
             </div>
-            <br>
+        </div>
+        <div class="row mt-3">
             <form action="/orders/close" method="post">
-                <div class="row">
-                    <div class="col-md-12">
-                        <p>Bitte Helfer auswählen:</p>
+                <p>Bitte Helfer auswählen:</p>
+                <div class="container">
+                    <div class="row">
                         {foreach item=helper from=$helperArray}
-                        <div class="checkbox" style="margin-top: 3px; margin-bottom: 3px;">
-                            <label>
-                                <input type="checkbox" name="helper[]" value="{$helper->uuid}" {if $helper->uuid == $order->owner_uuid}disabled{/if}>
-                                {$helper->user|capitalize}
-                            </label>
-                        </div>
+                            <div class="col-2">
+                                <div class="card p-1 m-1">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" name="helper[]" value="{$helper->uuid}" {if $helper->uuid == $order->owner_uuid}disabled{/if}>
+                                        <label class="form-check-label" for="helper[]">{$helper->user|capitalize}</label>
+                                    </div>
+                                </div>
+                            </div>
                         {/foreach}
                     </div>
                 </div>
-                <br>
-                <div class="row">
-                    <div class="col-xs-12">
-                        <input type="hidden" name="order_uuid" value="{$order->uuid}">
-                        <input type="submit" class="btn btn-danger" value="Bestellung abschließen">
-                    </div>
-                </div>
+                <input type="hidden" name="order_uuid" value="{$order->uuid}">
+                <input type="submit" class="btn btn-danger mt-3" value="Bestellung abschließen">
             </form>
-        {/if}
+            <input type="checkbox" class="btn-check" id="card-toggle" autocomplete="off">
+        </div>
     {/if}
 {/block}

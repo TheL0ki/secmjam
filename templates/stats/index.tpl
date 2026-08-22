@@ -3,11 +3,11 @@
 {block name=title}Stats - SEC-Mjam{/block}
 
 {block name=content}
-    <div class="row">
+    <div class="row mt-3">
         <div class="col-md-6">
-            <table class="table table-striped table-bordered">
+            <table class="table table-striped table-bordered mb-md-0 md-3">
                 <tr>
-                    <th colspan="2"><b>Top 5 Bestellungen</b></th>
+                    <th colspan="2">Top 5 Bestellungen</th>
                 </tr>
                 {assign var='counter' value=2}
                 {foreach item=item from=$topFiveItems}
@@ -23,9 +23,9 @@
             </table>
         </div>
         <div class="col-md-6">
-            <table class="table table-striped table-bordered">
+            <table class="table table-striped table-bordered mb-md-0 md-3">
                 <tr>
-                    <th colspan="2"><b>Persönliche Top 5 Bestellungen</b></th>
+                    <th colspan="2">Persönliche Top 5 Bestellungen</th>
                 </tr>
                 {assign var='counter' value=2}
                 {foreach item=item from=$topFiveItemsByUser}
@@ -41,9 +41,9 @@
             </table>
         </div>
     </div>
-    <div class="row">
+    <div class="row mt-md-3">
         <div class="col-md-6">
-            <table class="table table-striped table-bordered">
+            <table class="table table-striped table-bordered mb-md-0 md-3">
                 <tr>
                     <th colspan="2">Top Kategorien</th>
                 </tr>
@@ -62,7 +62,7 @@
             </table>
         </div>
         <div class="col-md-6">
-            <table class="table table-striped table-bordered">
+            <table class="table table-striped table-bordered mb-md-0 md-3">
                 <tr>
                     <th colspan="2">Persönliche Top Kategorien</th>
                 </tr>

@@ -3,52 +3,32 @@
 {block name=title}Einstellungen - SEC-Mjam{/block}
 
 {block name=content}
-    {nocache}
-    <div class="row">
-        {if $success == TRUE}
-            <div class="col-md-12">
-                <div class="alert alert-success" role="alert">
-                    Einstellungen gespeichert
+
+    <div class="row mt-3">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <span>Einstellungen</span>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="/user/settings" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label class="form-label" for="email">E-mail Adresse</label>
+                            <input class="form-control" type="email" name="email" id="email" value="{$user->email}" placeholder="Email">
+                        </div>
+                        <div class="form-check form-switch mb-3">
+                            <label class="form-check-label" for="notify">E-mail Benachrichtigung</label>
+                            <input class="form-check-input" type="checkbox" name="notify" id="notify" {if $user->notify == 1} checked{/if}>
+                        </div>
+                        <div class="form-check form-switch mb-3">
+                            <label class="form-check-label" for="active">Account Aktiv</label>
+                            <input class="form-check-input" type="checkbox" name="active" id="active" {if $user->active != '1'} value="1" {else} checked{/if}>
+                        </div>
+                        <input type="submit" value="Speichern" class="btn btn-success">
+                        <a href="/user/changepwd" class="btn btn-primary">Passwort ändern</a>
+                    </form>
                 </div>
             </div>
-        {elseif $error == TRUE}
-            <div class="col-md-12">
-                <div class="alert alert-danger" role="alert">
-                    Einstellungen gespeichert
-                </div>
-            </div>
-        {else}
-            <div class="col-md-7">
-                <form class="form-horizontal" method="post" action="/user/settings" enctype="multipart/form-data">
-                    <div class="form-group">
-                        <label for="email" class="col-sm-4 control-label">E-mail Adresse:</label>
-                        <div class="col-sm-8">
-                            <input type="email" name="email" class="form-control" id="email" value="{$user->email}" placeholder="Email">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="mail_check" class="col-sm-4 control-label">E-mail Benachrichtigung?</label>
-                        <div class="col-sm-8">
-                            <input type="checkbox" name="notify" id="notify" {if $user->notify == 1} checked{/if}>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="active" class="col-sm-4 control-label">Account Aktiv?</label>
-                        <div class="col-sm-8">
-                            <input type="checkbox" name="active" id="active" {if $user->active != '1'} value="1" {else} checked{/if}>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <input type="submit" value="Speichern" class="btn btn-success btn-block" style="margin-top: 5px; margin-bottom: 5px;"">
-                        </div>
-                        <div class="col-md-6">
-                            <a href="/user/changepwd" class="btn btn-primary btn-block" style="margin-top: 5px; margin-bottom: 5px;">Passwort ändern</a>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        {/if}
+        </div>
     </div>
-    {/nocache}
 {/block}

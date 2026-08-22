@@ -22,6 +22,7 @@ class MainController
             ->join('categories', 'orders.category_id', '=', 'categories.id')
             ->leftJoin('order_items', 'orders.uuid', '=', 'order_items.order_uuid')
             ->where('owner_uuid', $_SESSION['user']->uuid)
+            ->where('orders.open', '=', 0)
             ->selectRaw('COALESCE(SUM(categories.points * order_items.amount), 0) as order_points')
             ->groupBy('orders.owner_uuid')
             ->first();
@@ -31,6 +32,7 @@ class MainController
             ->join('categories', 'orders.category_id', '=', 'categories.id')
             ->leftJoin('order_items', 'orders.uuid', '=', 'order_items.order_uuid')
             ->where('user_uuid', $_SESSION['user']->uuid)
+            ->where('orders.open', '=', 0)
             ->selectRaw('ROUND(COALESCE(SUM(categories.points * order_items.amount), 0) / 2, 0) as helper_points')
             ->first();
 

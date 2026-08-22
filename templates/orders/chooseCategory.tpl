@@ -4,7 +4,7 @@
     
 {block name=content}
     <div class="row mt-3">
-        <div class="col">
+        <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
                     <span>Neue Bestellung anlegen</span>

@@ -4,7 +4,7 @@
 
 {block name="content"}
     <div class="row mt-3">
-        <div class="col">
+        <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
                     <span>Laufende Bestellungen</span>
@@ -15,7 +15,7 @@
                     {else}
                         {foreach $open_orders as $order}
                             {if $order->locked == 1}
-                                <span class="glyphicon glyphicon-lock"></span>
+                                <span class="bi bi-lock-fill"></span>
                             {/if}
                             <a href='/orders/show/{$order->uuid}'>{$order->created_at} - {$order->categoryName|capitalize}</a><br>
                         {/foreach}

@@ -16,6 +16,9 @@
 <li class="nav-item">
     <a class="nav-link {if $current_site|str_starts_with:'/stats'}active{/if}" href="/stats">Statistik</a>
 </li>
-<li class="nav-item ms-auto">
-    <a class="nav-link" href="/logout">Logout</a>
+<li class="nav-item d-md-none">
+    <a class="nav-link" href="/logout">Logout <i class="bi bi-box-arrow-right"></i></a>
+</li>
+<li class="nav-item ms-auto d-none d-md-block">
+    <a class="nav-link" href="/logout">Logout <i class="bi bi-box-arrow-right"></i></a>
 </li>

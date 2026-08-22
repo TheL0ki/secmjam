@@ -34,9 +34,12 @@
                                                 {/foreach}
                                             </select>
                                         {else}
-                                            {foreach $extras as $extra}
-                                                <input class="form-check-input" type="checkbox" name="item[{$item->id}][extras][]" value="{$extra->id}">{$extra->name}
-                                            {/foreach}
+                                            <div class="btn-group" role="group" aria-label="Extras">
+                                                {foreach $extras as $extra}
+                                                    <input class="btn-check" type="checkbox" id="extra-{$item->id}-{$extra->id}" name="item[{$item->id}][extras][]" value="{$extra->id}" autocomplete="off">
+                                                    <label class="btn btn-outline-primary" for="extra-{$item->id}-{$extra->id}">{$extra->name}</label>
+                                                {/foreach}
+                                            </div>
                                         {/if}
                                     </td>
                                     <td>€ {$item->price|number_format:2:',':'.'}</td>

@@ -16,7 +16,7 @@ class OverviewController
             ->leftJoin('orders', 'order_items.order_uuid', '=', 'orders.uuid')
             ->leftJoin('categories', 'orders.category_id', '=', 'categories.id')
             ->where('orders.open', 0)
-            ->select('order_items.*', 'categories.name as categoryName', 'orders.uuid as orderUuid')
+            ->select('order_items.*', 'categories.name as categoryName', 'orders.uuid')
             ->orderBy('order_items.created_at', 'desc')
             ->limit(10)
             ->get();
@@ -29,7 +29,7 @@ class OverviewController
             ->orderBy('orders.created_at', 'desc')
             ->limit(10)
             ->get();
-            
+        
         $this->smarty->assign([
             'last_orders' => $last_orders->toArray(),
             'last_orders_owner' => $last_orders_owner->toArray()

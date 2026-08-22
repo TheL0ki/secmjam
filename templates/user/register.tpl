@@ -5,7 +5,7 @@
 {block name=content}
     <script type="module" src="https://cdn.jsdelivr.net/npm/altcha@3.2.2/dist/main/altcha.min.js"></script>
     <script type="module" src="https://cdn.jsdelivr.net/npm/altcha@3.2.2/dist/i18n/de.js"></script>
-    <div class="row justify-content-center mt-4 mt-md-5">
+    <div class="row mt-3">
         <div class="col-12 col-sm-10 col-md-6">
             <div class="card">
                 <div class="card-header">

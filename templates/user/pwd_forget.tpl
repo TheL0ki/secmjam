@@ -3,7 +3,7 @@
 {block name=title}Passwort vergessen - SEC-Mjam{/block}
 
 {block name=content}
-    <div class="row justify-content-center mt-4 mt-md-5">
+    <div class="row mt-3">
         <div class="col-12 col-sm-10 col-md-6">
             <div class="card">
                 <div class="card-header">
