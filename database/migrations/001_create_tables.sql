@@ -24,17 +24,16 @@ CREATE TABLE IF NOT EXISTS `users` (
     `lastname` VARCHAR(100) NOT NULL,
     `email` VARCHAR(255) NOT NULL,
     `password` VARCHAR(255) NOT NULL,
+    `role` ENUM('admin','manager','user') NOT NULL DEFAULT 'user',
     `notify` TINYINT(1) NOT NULL DEFAULT 1,
     `vote` TINYINT(1) NOT NULL DEFAULT 0,
     `active` TINYINT(1) NOT NULL DEFAULT 1,
-    `points` INT NOT NULL DEFAULT 0,
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`uuid`),
     UNIQUE KEY `uq_users_user` (`user`),
     KEY `idx_users_email` (`email`),
-    KEY `idx_users_active_lastname` (`active`, `lastname`),
-    KEY `idx_users_active_points` (`active`, `points`)
+    KEY `idx_users_active_lastname` (`active`, `lastname`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `menu` (
