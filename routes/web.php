@@ -6,6 +6,7 @@ use App\Controllers\OrderController;
 use App\Controllers\OverviewController;
 use App\Controllers\HighscoreController;
 use App\Controllers\StatsController;
+use App\Controllers\AdminController;
 
 return [
     'GET' => [
@@ -27,6 +28,11 @@ return [
         '/user/changepwd' => [UserController::class, 'changePassword'],
         '/highscore' => [HighscoreController::class, 'index'],
         '/stats' => [StatsController::class, 'index'],
+        '/admin' => [AdminController::class, 'index'],
+        '/admin/users' => [AdminController::class, 'users'],
+        '/admin/categories' => [AdminController::class, 'categories'],
+        '/admin/extras' => [AdminController::class, 'extras'],
+        '/admin/menu' => [AdminController::class, 'menu'],
     ],
     'POST' => [
         '/login'  => [UserController::class, 'authenticate'],
