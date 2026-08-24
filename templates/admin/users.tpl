@@ -28,9 +28,11 @@
                                     <td>{$user->firstname} {$user->lastname}</td>
                                     <td>{$user->email}</td>
                                     <td><span class="badge bg-primary p-2">{$user->role|capitalize}</span></td>
-                                    <td>
-                                        <a href="/admin/users/edit/{$user->uuid}" class="btn btn-primary">Edit</a>
-                                        <a href="/admin/users/delete/{$user->uuid}" class="btn btn-danger">Delete</a>
+                                    <td class="d-flex gap-2">
+                                        <a role="button" href="/admin/users/edit/{$user->uuid}" class="btn btn-primary">Bearbeiten</a>
+                                        <form action="/admin/users/delete/{$user->uuid}" method="post">
+                                            <button role="button" class="btn btn-danger" type="submit" onclick="return confirm('Are you sure you want to delete this user?')">Löschen</button>
+                                        </form>
                                     </td>
                                 </tr>
                             {/foreach}

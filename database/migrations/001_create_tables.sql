@@ -43,6 +43,9 @@ CREATE TABLE IF NOT EXISTS `menu` (
     `item` VARCHAR(255) NOT NULL,
     `size` VARCHAR(50) NOT NULL DEFAULT '-',
     `price` DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+    `active` TINYINT(1) NOT NULL DEFAULT 1,
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,	
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
     KEY `idx_menu_category_sub` (`category_id`, `sub_category`),
     CONSTRAINT `fk_menu_category` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`)

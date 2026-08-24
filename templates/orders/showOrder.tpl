@@ -43,9 +43,11 @@
                                 <td>{$orderItem->amount}</td>
                                 <td>{$orderItem->size}</td>
                                 <td>
-                                    {foreach item=extra from=$orderExtras[$orderItem->id]}
-                                        {$extra|capitalize}
-                                    {/foreach}
+                                    {if isset($orderExtras[$orderItem->id]) && count($orderExtras[$orderItem->id]) > 0}
+                                        {foreach item=extra from=$orderExtras[$orderItem->id]}
+                                            {$extra|capitalize}
+                                        {/foreach}
+                                    {/if}
                                 </td>
                                 <td>€ {$orderItem->price|number_format:2:",":"."}</td>
                                 <td>

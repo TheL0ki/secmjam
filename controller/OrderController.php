@@ -115,11 +115,12 @@ class OrderController
 
         $menu = $this->capsule
             ->table('menu')
-            ->where('category_id', $order->category_id)
+            ->where('menu.category_id', $order->category_id)
+            ->where('menu.active', true)
             ->leftJoin('categories', 'menu.category_id', '=', 'categories.id')
             ->select('menu.*', 'categories.id as category_id', 'categories.multiple_extras as multiple_extras')
             ->get();
-        $extras = $this->capsule->table('extras')->where('category_id', $order->category_id)->get();
+        $extras = $this->capsule->table('extras')->where('category_id', $order->category_id)->where('active', true)->get();
         $this->smarty->assign([
             'menu' => $menu->toArray(),
             'extras' => $extras->toArray(),

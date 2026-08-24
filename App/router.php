@@ -27,6 +27,13 @@ if (!$isPublic && !isset($_SESSION['user'])) {
     exit;
 }
 
+$isAdminRoute = $path === '/admin' || str_starts_with($path, '/admin/');
+if ($isAdminRoute && ($_SESSION['user']->role ?? null) !== 'admin') {
+    http_response_code(403);
+    $smarty->display('error/403.tpl');
+    exit;
+}
+
 function matchRoute(string $path, array $routes): ?array
 {
     foreach ($routes as $pattern => $handler) {
@@ -67,7 +74,7 @@ if ($result === null) {
 
 if (!class_exists($class) || !method_exists($class, $action)) {
     http_response_code(404);
-    require 'controller/error/404.php';
+    $smarty->display('error/404.tpl');
     exit;
 }
 

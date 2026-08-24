@@ -26,9 +26,12 @@
                                 <tr>
                                     <td>{$category->name}</td>
                                     <td class="text-center">{$category->points}</td>
-                                    <td class="text-center">
+                                    <td class="text-center d-flex justify-content-center gap-2">
                                         <a href="/admin/categories/edit/{$category->id}" class="btn btn-primary">Edit</a>
-                                        <a href="/admin/categories/delete/{$category->id}" class="btn btn-danger">Delete</a>
+                                        <form action="/admin/categories/delete" method="post">
+                                            <input type="hidden" name="category_id" value="{$category->id}">
+                                            <button type="submit" class="btn btn-danger">Delete</button>
+                                        </form>
                                     </td>
                                 </tr>
                             {/foreach}
