@@ -1,3 +1,13 @@
+26.08.2026 v0.4:
+<ul>
+    <li>Kompletter Rewrite des Quellcodes und der Applikationslogik</li>
+    <li>Neues Datenbank Schema</li>
+    <li>Update des Designs auf Bootstrap 5.3</li>
+    <li>Hinzufügen eines Admin Bereichs</li>
+</ul>
+
+<hr>
+
 09.08.2017 v0.3:
 <ul>
     <li>Neuer Lieferant - Homolje Grill</li>
