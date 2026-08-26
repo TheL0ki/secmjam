@@ -130,4 +130,16 @@ CREATE TABLE IF NOT EXISTS `password_resets` (
     CONSTRAINT `fk_password_resets_user` FOREIGN KEY (`user_uuid`) REFERENCES `users` (`uuid`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS `lunch_votes` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `user_uuid` UUID NOT NULL,
+    `choice` VARCHAR(50) NOT NULL,
+    `vote_date` DATE NOT NULL,
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uq_lunch_votes_user_date` (`user_uuid`, `vote_date`),
+    KEY `idx_lunch_votes_date` (`vote_date`),
+    CONSTRAINT `fk_lunch_votes_user` FOREIGN KEY (`user_uuid`) REFERENCES `users` (`uuid`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 SET FOREIGN_KEY_CHECKS = 1;

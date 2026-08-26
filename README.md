@@ -12,7 +12,7 @@ The UI is in German.
 
 3. **Lock and close.** The owner can lock an order so no one else can add items (or unlock it again). When the food is ordered, close the order and mark helpers — people who picked up or helped. Closing awards points: full category points for the owner, half for helpers.
 
-4. **Check your history and scores.** **Übersicht** lists your recent items and orders you owned. **Home** shows your current points. **Highscore** ranks everyone; **Statistik** shows popular items and categories (yours and overall).
+4. **Check your history and scores.** **Übersicht** lists your recent items and orders you owned. **Home** shows your current points and a daily lunch poll (one vote per person per day). **Highscore** ranks everyone; **Statistik** shows popular items and categories (yours and overall).
 
 5. **Settings.** Under **Einstellungen** you can change your email, turn order-notification mail on or off, deactivate your account, or change your password.
 
@@ -27,7 +27,7 @@ composer install
 cp .env.example .env
 ```
 
-Fill in `.env` (database, SMTP, `APP_ADDRESS`, and `ALTCHA_HMAC_SECRET`). Create the schema with `database/migrations/001_create_tables.sql`. The first admin user is created through registration or the admin UI after you have access.
+Fill in `.env` (database, SMTP, `APP_ADDRESS`, `APP_TIMEZONE`, and `ALTCHA_HMAC_SECRET`). Create the schema with `database/migrations/001_create_tables.sql`. Existing databases that predate the lunch poll also need `database/migrations/002_create_lunch_votes.sql`. The first admin user is created through registration or the admin UI after you have access.
 
 ## License
 

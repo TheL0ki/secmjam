@@ -25,40 +25,21 @@
                     </div>
                     <div class="card-body">
                         <div id="poll" style="padding-left: 25px; padding-right: 25px;">
-                            {if $voteStatus == '1'}
-                                {include 'voteBlock.tpl'}
+                            {if $hasVoted}
+                                {include 'partials/voteBlock.tpl'}
+                            {elseif !$lunchChoices}
+                                <p class="mb-0 text-muted">Keine Kategorien vorhanden.</p>
                             {else}
-                                <form>
-                                    <div class="radio">
-                                        <label for="noodles">
-                                            <input type="radio" value="1" onclick="getVote(this.value)">
-                                            Noodles
-                                        </label>
-                                    </div>
-                                    <div class="radio">
-                                        <label for="pizza">
-                                            <input type="radio" value="2" onclick="getVote(this.value)">
-                                            Pizza
-                                        </label>
-                                    </div>
-                                    <div class="radio">
-                                        <label for="kebap">
-                                            <input type="radio" value="3" onclick="getVote(this.value)">
-                                            Kebap
-                                        </label>
-                                    </div>
-                                    <div class="radio">
-                                        <label for="schnitzel">
-                                            <input type="radio" value="4" onclick="getVote(this.value)">
-                                            Schnitzel
-                                        </label>
-                                    </div>
-                                    <div class="radio">
-                                        <label for="schnitzel">
-                                            <input type="radio" value="5" onclick="getVote(this.value)">
-                                            Grill
-                                        </label>
-                                    </div>
+                                <form action="/vote" method="post">
+                                    {foreach $lunchChoices as $slug => $label}
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="choice" id="lunch-{$slug}" value="{$slug}" required onchange="this.form.submit()">
+                                            <label class="form-check-label" for="lunch-{$slug}">{$label}</label>
+                                        </div>
+                                    {/foreach}
+                                    <noscript>
+                                        <button type="submit" class="btn btn-sm btn-primary mt-2">Abstimmen</button>
+                                    </noscript>
                                 </form>
                             {/if}
                         </div>

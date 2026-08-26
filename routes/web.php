@@ -43,6 +43,7 @@ return [
         '/admin/menu' => [AdminController::class, 'menu'],
     ],
     'POST' => [
+        '/vote' => [MainController::class, 'vote'],
         '/login'  => [UserController::class, 'authenticate'],
         '/register' => [UserController::class, 'registerUser'],
         '/forgot-password' => [UserController::class, 'sendPasswordReset'],

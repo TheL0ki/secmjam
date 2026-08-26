@@ -1,52 +1,14 @@
-<div class="row" style="margin-top: 10px;">
-    <div class="col-xs-3">
-        Noodles:
-    </div>
-    <div class="col-xs-9">
+<p class="text-muted mb-2">{$lunchTotal} {if $lunchTotal == 1}Stimme{else}Stimmen{/if} heute</p>
+{foreach $lunchChoices as $slug => $label}
+    <div class="mb-2">
+        <div class="d-flex justify-content-between">
+            <span>{$label}</span>
+            <span class="text-muted">{$lunchCounts[$slug]} ({$lunchPercent[$slug]}%)</span>
+        </div>
         <div class="progress">
-            <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: {$percent.noodles}%; min-width: 2em;">
-              {$percent.noodles}%
+            <div class="progress-bar" role="progressbar" aria-valuenow="{$lunchPercent[$slug]}" aria-valuemin="0" aria-valuemax="100" style="width: {$lunchPercent[$slug]}%; min-width: 2em;">
+                {$lunchPercent[$slug]}%
             </div>
         </div>
     </div>
-    <div class="col-xs-3">
-        Pizza:
-    </div>
-    <div class="col-xs-9">
-        <div class="progress">
-            <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: {$percent.pizza}%; min-width: 2em;">
-              {$percent.pizza}%
-            </div>
-        </div>
-    </div>
-    <div class="col-xs-3">
-        Kebap:
-    </div>
-    <div class="col-xs-9">
-        <div class="progress">
-            <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: {$percent.kebap}%; min-width: 2em;">
-              {$percent.kebap}%
-            </div>
-        </div>
-    </div>
-    <div class="col-xs-3">
-        Schnitzel:
-    </div>
-    <div class="col-xs-9">
-        <div class="progress">
-            <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: {$percent.schnitzel}%; min-width: 2em;">
-              {$percent.schnitzel}%
-            </div>
-        </div>
-    </div>
-    <div class="col-xs-3">
-        Grill:
-    </div>
-    <div class="col-xs-9">
-        <div class="progress">
-            <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: {$percent.grill}%; min-width: 2em;">
-              {$percent.grill}%
-            </div>
-        </div>
-    </div>
-</div>
+{/foreach}

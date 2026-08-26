@@ -4,6 +4,7 @@
     <li>Neues Datenbank Schema</li>
     <li>Update des Designs auf Bootstrap 5.3</li>
     <li>Hinzufügen eines Admin Bereichs</li>
+    <li>Tägliche Lunch-Umfrage: eine Stimme pro User und Tag</li>
 </ul>
 
 <hr>
