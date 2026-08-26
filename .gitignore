@@ -1,6 +1,5 @@
-/smarty
-/cache
-/nbproject
+vendor/
+templates_c/
+database/seeders/
 
-config/poll_result\.txt
-config/setup\.php
+.env
