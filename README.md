@@ -27,7 +27,7 @@ composer install
 cp .env.example .env
 ```
 
-Fill in `.env` (database, SMTP, `APP_ADDRESS`, `APP_TIMEZONE`, and `ALTCHA_HMAC_SECRET`). Create the schema with `database/migrations/001_create_tables.sql`. Existing databases that predate the lunch poll also need `database/migrations/002_create_lunch_votes.sql`. The first admin user is created through registration or the admin UI after you have access.
+Fill in `.env` (database, SMTP, `APP_ADDRESS`, `APP_TIMEZONE`, and `ALTCHA_HMAC_SECRET`). Create the schema with `database/migrations/001_create_tables.sql`. The first admin user is created through registration or the admin UI after you have access.
 
 ## License
 
